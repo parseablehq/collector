@@ -1,0 +1,8 @@
+---  
+logStreams:
+ - name: operator
+   collectFrom:
+    - namespace: operator
+      podSelector:
+        namespace: operator
+        app: druid

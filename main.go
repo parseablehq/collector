@@ -1,18 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"kube-collector/pkg/collector"
 	"kube-collector/pkg/k8s"
 	"kube-collector/pkg/store"
-
-	corev1 "k8s.io/api/core/v1"
-
-	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 // logMessage is the CRI internal log type.
@@ -21,83 +17,45 @@ type logMessage struct {
 	log       []string
 }
 
-func main() {
-	pods, _ := k8s.K8s.ListPods("operator", "namespace=operator")
-
-	ticker := time.NewTicker(5 * time.Second)
-	for t := range ticker.C {
-		for _, p := range pods.Items {
-			fmt.Println(store.GetTime(p.Name))
-
-			fmt.Println(p.GetName())
-			fmt.Println("Invoked at ", t)
-
-			collector.GetPodLogs(p)
-			///fmt.Println(a)
-		}
-	}
-
+type LogConfig struct {
+	LogStreams []struct {
+		Name        string `yaml:"name"`
+		CollectFrom []struct {
+			Namespace   string            `yaml:"namespace"`
+			PodSelector map[string]string `yaml:"podSelector"`
+		} `yaml:"collectFrom"`
+	} `yaml:"logStreams"`
 }
 
-func getPodLogs(pod corev1.Pod) (logMessage, error) {
+func main() {
+	configfile, _ := ioutil.ReadFile("config.yaml")
 
-	var newLogTime int64
+	var logConfig LogConfig
+	yaml.Unmarshal([]byte(configfile), &logConfig)
 
-	var podLogOpts corev1.PodLogOptions
+	// 1. read yaml file
+	// 2. namespace and label selectors
 
-	if store.GetTime(pod.GetName()) != (time.Time{}) {
-		newLogTime = int64(time.Now().Sub(store.GetTime(pod.GetName())).Seconds())
-		podLogOpts = corev1.PodLogOptions{
-			SinceSeconds: &newLogTime,
-			Timestamps:   true,
-		}
-	} else {
-		podLogOpts = corev1.PodLogOptions{
-			//	SinceSeconds: &newLogTime,
-			Timestamps: true,
-		}
-	}
+	configs := logConfig.LogStreams
 
-	req := k8s.K8s.GetPodLogs(pod, podLogOpts)
+	for _, v := range configs {
+		for _, vv := range v.CollectFrom {
+			pods, _ := k8s.K8s.ListPods(vv.Namespace, "namespace=operator")
 
-	podLogs, err := req.Stream(context.TODO())
+			ticker := time.NewTicker(5 * time.Second)
+			for t := range ticker.C {
+				for _, p := range pods.Items {
+					fmt.Println(store.GetTime(p.Name))
 
-	if err != nil {
-		return logMessage{}, err
-	}
+					fmt.Println(p.GetName())
+					fmt.Println("Invoked at ", t)
 
-	defer podLogs.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		return logMessage{}, err
-	}
-	str := buf.String()
-
-	newStr := strings.Split(str, "\n")
-
-	if len(newStr) > 1 {
-		a := newStr[len(newStr)-2]
-
-		words := strings.Fields(a)
-
-		aa, _ := time.Parse(time.RFC3339, words[0])
-		if err != nil {
-
+					collector.GetPodLogs(p)
+					///fmt.Println(a)
+				}
+			}
 		}
 
-		store.PutPoNameTime(pod.GetName(), aa)
-
-		var lm logMessage
-
-		lm.timestamp = aa
-		lm.log = newStr[1:]
-
-		fmt.Println(lm)
-
-		return lm, nil
-	} else {
-		return logMessage{}, nil
 	}
+
 }

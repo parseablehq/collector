@@ -3,6 +3,8 @@ package collector
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"kube-collector/pkg/k8s"
 	"kube-collector/pkg/store"
@@ -15,8 +17,8 @@ import (
 
 // logMessage is the log type.
 type logMessage struct {
-	timestamp time.Time
-	log       []string
+	Timestamp time.Time `json:"time"`
+	Log       []string  `json:"log"`
 }
 
 func GetPodLogs(pod corev1.Pod) (logMessage, error) {
@@ -72,14 +74,15 @@ func GetPodLogs(pod corev1.Pod) (logMessage, error) {
 		store.PutPoNameTime(pod.GetName(), getTimeStamp)
 
 		var lm logMessage
-		// lm.log = make([]string, 0)
-		// lm.timestamp = getTimeStamp
-		// lm.log = newLogs[1:]
+		lm.Timestamp = getTimeStamp
+		lm.Log = newLogs[1:]
 
-		// a, _ := json.Marshal(lm)
+		payLoad, err := json.Marshal(&lm)
+		if err != nil {
+			return logMessage{}, nil
+		}
 
-		//fmt.Println(string(a))
-
+		fmt.Println(payLoad)
 		return lm, nil
 	} else {
 		return logMessage{}, nil
