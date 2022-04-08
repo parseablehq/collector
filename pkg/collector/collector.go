@@ -1,11 +1,6 @@
 package collector
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"kube-collector/pkg/k8s"
 	"kube-collector/pkg/store"
 
@@ -17,11 +12,11 @@ import (
 
 // logMessage is the log type.
 type logMessage struct {
-	Timestamp time.Time `json:"time"`
-	Log       []string  `json:"log"`
+	Timestamp string `json:"time"`
+	Log       string `json:"log"`
 }
 
-func GetPodLogs(pod corev1.Pod) (logMessage, error) {
+func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 
 	// poLogOptions
 	var podLogOpts corev1.PodLogOptions
@@ -41,50 +36,49 @@ func GetPodLogs(pod corev1.Pod) (logMessage, error) {
 	}
 
 	// getPodLogs
-	req := k8s.K8s.GetPodLogs(pod, podLogOpts)
-
-	podLogs, err := req.Stream(context.TODO())
+	podLogs, err := k8s.K8s.GetPodLogs(pod, podLogOpts)
 	if err != nil {
-		return logMessage{}, err
+		return []logMessage{}, err
 	}
 
-	defer podLogs.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		return logMessage{}, err
-	}
-
-	logs := buf.String()
-
-	// split logs on new line
-	newLogs := strings.Split(logs, "\n")
-
-	if len(newLogs) > 1 {
-		nlog := newLogs[len(newLogs)-2]
-		// seperate on space
-		spacedLogs := strings.Fields(nlog)
-
-		getTimeStamp, err := time.Parse(time.RFC3339, spacedLogs[0])
+	if len(podLogs) > 1 {
+		// last line of the log
+		err := putTimeStamp(pod.GetName(), podLogs)
 		if err != nil {
-			return logMessage{}, err
-		}
-		// put poName to TimeStamp
-		store.PutPoNameTime(pod.GetName(), getTimeStamp)
-
-		var lm logMessage
-		lm.Timestamp = getTimeStamp
-		lm.Log = newLogs[1:]
-
-		payLoad, err := json.Marshal(&lm)
-		if err != nil {
-			return logMessage{}, nil
+			return []logMessage{}, err
 		}
 
-		fmt.Println(payLoad)
-		return lm, nil
+		var logMessages []logMessage
+
+		if len(podLogs) > 1 {
+			for _, lm := range podLogs {
+				newLogMessage := strings.Fields(lm)
+				if len(newLogMessage) > 1 {
+					log := logMessage{
+						Timestamp: newLogMessage[0],
+						Log:       strings.Join(newLogMessage[1:], " "),
+					}
+					logMessages = append(logMessages, log)
+				}
+			}
+		}
+
+		return logMessages, nil
 	} else {
-		return logMessage{}, nil
+		return []logMessage{}, nil
 	}
+}
+
+func putTimeStamp(podName string, podLogs []string) error {
+	lastLinelog := podLogs[len(podLogs)-2]
+	// seperate on space for last line
+	spacedLogs := strings.Fields(lastLinelog)
+	// get the timestamp appended to log by k8s
+	getTimeStamp, err := time.Parse(time.RFC3339, spacedLogs[0])
+	if err != nil {
+		return err
+	}
+	// put poName to TimeStamp
+	store.PutPoNameTime(podName, getTimeStamp)
+	return err
 }

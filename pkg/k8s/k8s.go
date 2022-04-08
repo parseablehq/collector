@@ -1,9 +1,12 @@
 package k8s
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"log"
 	"os"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +30,7 @@ type lister interface {
 
 // getter interface
 type getter interface {
-	GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) *rest.Request
+	GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) ([]string, error)
 }
 
 // k8s client struct
@@ -51,8 +54,23 @@ func (c *k8sClient) ListPods(namespace, selector string) (*corev1.PodList, error
 }
 
 // get pods method
-func (c *k8sClient) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) *rest.Request {
-	return c.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOptions)
+func (c *k8sClient) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) ([]string, error) {
+	req := c.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOptions)
+	podLogs, err := req.Stream(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.Split(buf.String(), "\n"), nil
+
 }
 
 func getKubeClientset() *k8sClient {

@@ -40,7 +40,7 @@ func main() {
 
 	for _, v := range configs {
 		for _, vv := range v.CollectFrom {
-			pods, _ := k8s.K8s.ListPods(vv.Namespace, "namespace=operator")
+			pods, _ := k8s.K8s.ListPods(vv.Namespace, split(vv.PodSelector))
 
 			ticker := time.NewTicker(5 * time.Second)
 			for t := range ticker.C {
@@ -55,7 +55,14 @@ func main() {
 				}
 			}
 		}
-
 	}
 
+}
+
+func split(labels map[string]string) string {
+	for k, v := range labels {
+		newstring := k + "=" + v
+		return newstring
+	}
+	return ""
 }

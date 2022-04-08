@@ -1,8 +1,9 @@
 ---  
 logStreams:
  - name: operator
+   #collectInterval: 10s
    collectFrom:
-    - namespace: operator
+    - namespace: default
       podSelector:
-        namespace: operator
-        app: druid
+        zk_cluster: tiny-cluster-zk
+        app: cloudsql-proxy
