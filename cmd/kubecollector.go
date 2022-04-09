@@ -5,7 +5,6 @@ import (
 	"kube-collector/pkg/collector"
 	"kube-collector/pkg/http"
 	"kube-collector/pkg/k8s"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -33,21 +32,20 @@ func KubeCollector(configs *LogConfig) {
 			}
 			for _, po := range podsList {
 				for _, p := range po.Items {
-					logs, err := collector.GetPodLogs(p)
+					_, err := collector.GetPodLogs(p)
 					if err != nil {
 						log.Error(err)
 						return
 					} else {
 						log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
 					}
-
-					err = post2Server(logs, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+config.Name)
-					if err != nil {
-						log.Error(err)
-						return
-					} else {
-						log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.Namespace)
-					}
+					// err = post2Server(logs, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+config.Name)
+					// if err != nil {
+					// 	log.Error(err)
+					// 	return
+					// } else {
+					// 	log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.Namespace)
+					// }
 				}
 			}
 
