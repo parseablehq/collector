@@ -4,10 +4,10 @@ import (
 	"kube-collector/pkg/k8s"
 	"kube-collector/pkg/store"
 
-	corev1 "k8s.io/api/core/v1"
-
 	"strings"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 // logMessage is the log type.

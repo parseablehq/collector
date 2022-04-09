@@ -23,11 +23,10 @@ type ClientHTTPRequests struct {
 }
 
 //   Constructor to ClientHTTPRequests Struct
-func NewClientHTTPRequests(methods string, body []byte) *ClientHTTPRequests {
+func NewClientHTTPRequests(methods string, url string, body []byte) *ClientHTTPRequests {
 	return &ClientHTTPRequests{
 		method:   methods,
 		body:     body,
-		url:      os.Getenv("PARSEABLE_URL"),
 		username: os.Getenv("USERNAME"),
 		password: os.Getenv("PASSWORD"),
 	}

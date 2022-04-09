@@ -2,67 +2,27 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"kube-collector/pkg/collector"
-	"kube-collector/pkg/k8s"
-	"kube-collector/pkg/store"
+	"kube-collector/cmd"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	log "github.com/sirupsen/logrus"
 )
 
-// logMessage is the CRI internal log type.
-type logMessage struct {
-	timestamp time.Time
-	log       []string
-}
-
-type LogConfig struct {
-	LogStreams []struct {
-		Name        string `yaml:"name"`
-		CollectFrom []struct {
-			Namespace   string            `yaml:"namespace"`
-			PodSelector map[string]string `yaml:"podSelector"`
-		} `yaml:"collectFrom"`
-	} `yaml:"logStreams"`
-}
-
 func main() {
-	configfile, _ := ioutil.ReadFile("config.yaml")
-
-	var logConfig LogConfig
-	yaml.Unmarshal([]byte(configfile), &logConfig)
-
-	// 1. read yaml file
-	// 2. namespace and label selectors
-
-	configs := logConfig.LogStreams
-
-	for _, v := range configs {
-		for _, vv := range v.CollectFrom {
-			pods, _ := k8s.K8s.ListPods(vv.Namespace, split(vv.PodSelector))
-
-			ticker := time.NewTicker(5 * time.Second)
-			for t := range ticker.C {
-				for _, p := range pods.Items {
-					fmt.Println(store.GetTime(p.Name))
-
-					fmt.Println(p.GetName())
-					fmt.Println("Invoked at ", t)
-
-					collector.GetPodLogs(p)
-					///fmt.Println(a)
-				}
-			}
-		}
+	config, err := cmd.ReadConfig("config.yaml")
+	if err != nil {
+		log.Error(err)
 	}
-
+	for _, logStream := range config.LogStreams {
+		runKubeCollector(time.Duration(logStream.CollectInterval), config)
+	}
 }
 
-func split(labels map[string]string) string {
-	for k, v := range labels {
-		newstring := k + "=" + v
-		return newstring
+func runKubeCollector(interval time.Duration, config *cmd.LogConfig) {
+	ticker := time.NewTicker(interval * time.Second)
+
+	for t := range ticker.C {
+		fmt.Println("Invoked at ", t)
+		cmd.KubeCollector(config)
 	}
-	return ""
 }

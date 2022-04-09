@@ -1,7 +1,7 @@
 ---  
 logStreams:
  - name: operator
-   #collectInterval: 10s
+   collectInterval: 10
    collectFrom:
     - namespace: default
       podSelector:
