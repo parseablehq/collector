@@ -31,3 +31,10 @@ helm-update:
 	kube-collector \
 	helm/chaos-controller \
 	-f helm/chaos-controller/values.yaml --namespace kube-collector
+
+# helm template
+helm-template:
+	helm template \
+	kube-collector \
+	helm/kube-collector \
+	-f helm/kube-collector/values.yaml --namespace kube-collector
