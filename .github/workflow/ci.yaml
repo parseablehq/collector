@@ -1,11 +1,7 @@
+## on: [push, pull_request]
+on: [pull_request]
 
-name: Docker Image CI
-
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+name: Continuous integration
 
 jobs:
 
