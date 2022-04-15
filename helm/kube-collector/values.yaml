@@ -1,12 +1,15 @@
 logStreams:
-  - name: kube-system
+  - name: kubesystem
     collectInterval: 3
     addLabels:
-      app: zookeeper
+      system: kubernetes
     collectFrom:
       - namespace: kube-system
         podSelector:
-          zk_cluster: tiny-cluster-zk
+          tier: node
+
+env:
+ PARSEABLE_URL: http://api.parseable.io
 
 replicaCount: 1
 
@@ -31,27 +34,17 @@ rbac:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: ClusterIP
   port: 80
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
 
 
 nodeSelector: {}

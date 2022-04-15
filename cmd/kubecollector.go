@@ -58,13 +58,11 @@ func KubeCollector(configs *LogStream) {
 
 }
 
-func post2Server(logs interface{}, url string) error {
-	jLogs, err := json.Marshal(logs)
-	if err != nil {
-		return err
-	}
+func post2Server(logs []byte, url string) error {
 
-	var http http.HTTP = http.NewClientHTTPRequests("POST", url, jLogs)
+	var err error
+
+	var http http.HTTP = http.NewClientHTTPRequests("POST", url, logs)
 
 	_, err = http.HTTP()
 	if err != nil {

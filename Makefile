@@ -29,8 +29,8 @@ docker-push:
 helm-update:
 	helm upgrade --install \
 	kube-collector \
-	helm/chaos-controller \
-	-f helm/chaos-controller/values.yaml --namespace kube-collector
+	helm/kube-collector \
+	-f helm/kube-collector/values.yaml --namespace kube-collector
 
 # helm template
 helm-template:
