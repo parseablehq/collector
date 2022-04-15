@@ -5,6 +5,7 @@ import (
 	"kube-collector/pkg/collector"
 	"kube-collector/pkg/http"
 	"kube-collector/pkg/k8s"
+	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -17,39 +18,42 @@ type logMessage struct {
 	log       []string
 }
 
-func KubeCollector(configs *LogConfig) {
+func KubeCollector(configs *LogStream) {
 
-	for _, config := range configs.LogStreams {
-		for _, collectFrom := range config.CollectFrom {
-			var podsList []*v1.PodList
-			for k, v := range collectFrom.PodSelector {
-				pods, err := k8s.K8s.ListPods(collectFrom.Namespace, k+"="+v)
+	for _, collectFrom := range configs.CollectFrom {
+		var podsList []*v1.PodList
+		for k, v := range collectFrom.PodSelector {
+			pods, err := k8s.K8s.ListPods(collectFrom.Namespace, k+"="+v)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			podsList = append(podsList, pods)
+		}
+		for _, po := range podsList {
+			for _, p := range po.Items {
+				logs, err := collector.GetPodLogs(p)
 				if err != nil {
 					log.Error(err)
 					return
+				} else {
+					log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
 				}
-				podsList = append(podsList, pods)
-			}
-			for _, po := range podsList {
-				for _, p := range po.Items {
-					_, err := collector.GetPodLogs(p)
-					if err != nil {
-						log.Error(err)
-						return
-					} else {
-						log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
-					}
-					// err = post2Server(logs, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+config.Name)
-					// if err != nil {
-					// 	log.Error(err)
-					// 	return
-					// } else {
-					// 	log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.Namespace)
-					// }
+				jLogs, err := json.Marshal(logs)
+				if err != nil {
+					return
 				}
-			}
 
+				err = post2Server(jLogs, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
+				if err != nil {
+					log.Error(err)
+					return
+				} else {
+					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), p.Namespace)
+				}
+			}
 		}
+
 	}
 
 }

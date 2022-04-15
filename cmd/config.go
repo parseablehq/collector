@@ -7,18 +7,21 @@ import (
 )
 
 type LogConfig struct {
-	LogStreams []struct {
-		Name            string `yaml:"name"`
-		CollectInterval int    `yaml:"collectInterval"`
-		CollectFrom     []struct {
-			Namespace   string            `yaml:"namespace"`
-			PodSelector map[string]string `yaml:"podSelector"`
-		} `yaml:"collectFrom"`
-	} `yaml:"logStreams"`
+	LogStreams []LogStream `yaml:"logStreams"`
 }
 
-func ReadConfig(path string) (*LogConfig, error) {
-	configfile, err := ioutil.ReadFile(path)
+type LogStream struct {
+	Name            string            `yaml:"name"`
+	AddLabels       map[string]string `yaml:"addLabels"`
+	CollectInterval int               `yaml:"collectInterval"`
+	CollectFrom     []struct {
+		Namespace   string            `yaml:"namespace"`
+		PodSelector map[string]string `yaml:"podSelector"`
+	} `yaml:"collectFrom"`
+}
+
+func ReadConfig(path *string) (*LogConfig, error) {
+	configfile, err := ioutil.ReadFile(*path)
 	if err != nil {
 		return nil, err
 	}

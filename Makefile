@@ -1,0 +1,33 @@
+SHELL := /bin/bash
+IMAGE = parseable/kube-collector
+TAG ?= $(shell git rev-parse --short HEAD)
+
+run: fmt vet 
+	go run ./main.go
+
+# Run go fmt against code
+tidy:
+	go mod tidy
+
+# Run go fmt against code
+fmt:
+	go fmt ./...
+
+# Run go vet against code
+vet:
+	go vet ./...
+
+# Build the docker image
+docker-build:
+	docker build . -t ${IMAGE}:${TAG}
+
+# Push the docker image
+docker-push:
+	docker push ${IMAGE}:${TAG}
+
+# helm deploy
+helm-update:
+	helm upgrade --install \
+	kube-collector \
+	helm/chaos-controller \
+	-f helm/chaos-controller/values.yaml --namespace kube-collector

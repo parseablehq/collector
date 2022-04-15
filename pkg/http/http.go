@@ -17,6 +17,7 @@ type ClientHTTPRequests struct {
 	url    string
 	method string
 	body   []byte
+	labels map[string]string
 	// basic auth
 	username string
 	password string
@@ -40,6 +41,10 @@ func (c ClientHTTPRequests) HTTP() (bodyBytes []byte, err error) {
 
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("Content-Type", "application/json")
+
+	for key, value := range c.labels {
+		req.Header.Add(key, value)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

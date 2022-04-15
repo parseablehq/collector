@@ -1,9 +1,0 @@
----  
-logStreams:
- - name: operator
-   collectInterval: 10
-   collectFrom:
-    - namespace: default
-      podSelector:
-        zk_cluster: tiny-cluster-zk
-        app: cloudsql-proxy
