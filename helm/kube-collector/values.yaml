@@ -1,5 +1,5 @@
 logStreams:
-  - name: kubesystem
+  - name: kubesystems
     collectInterval: 3
     addLabels:
       system: kubernetes
@@ -15,7 +15,7 @@ replicaCount: 1
 
 image:
   repository: parseable/kube-collector
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
