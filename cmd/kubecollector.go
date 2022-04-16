@@ -35,23 +35,25 @@ func KubeCollector(configs *LogStream) {
 		for _, po := range podsList {
 			for _, p := range po.Items {
 				logs, err := collector.GetPodLogs(p)
-				if err != nil {
-					log.Error(err)
-					return
-				} else {
-					log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
-				}
-				jLogs, err := json.Marshal(logs)
-				if err != nil {
-					return
-				}
+				if len(logs) > 0 {
+					if err != nil {
+						log.Error(err)
+						return
+					} else {
+						log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
+					}
+					jLogs, err := json.Marshal(logs)
+					if err != nil {
+						return
+					}
 
-				err = httpPost(jLogs, configs.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
-				if err != nil {
-					log.Error(err)
-					return
-				} else {
-					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
+					err = httpPost(jLogs, configs.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
+					if err != nil {
+						log.Error(err)
+						return
+					} else {
+						log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
+					}
 				}
 			}
 		}
