@@ -1,18 +1,10 @@
 ---  
 logStreams:
- - name: zookeeper
+ - name: kubesystem
    collectInterval: 3
    addLabels:
      app: zookeeper
    collectFrom:
-    - namespace: default
+    - namespace: kube-system
       podSelector:
-        zk_cluster: tiny-cluster-zk
- - name: operator
-   collectInterval: 3
-   addLabels:
-      app: operator
-   collectFrom:
-    - namespace: operator
-      podSelector:
-        app.kubernetes.io/name: etcd
+        tier: node

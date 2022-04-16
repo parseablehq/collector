@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"kube-collector/pkg/collector"
-	"kube-collector/pkg/http"
 	"kube-collector/pkg/k8s"
+	"net/http"
+
 	"os"
 	"time"
 
@@ -44,12 +46,12 @@ func KubeCollector(configs *LogStream) {
 					return
 				}
 
-				err = post2Server(jLogs, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
+				err = httpPost(jLogs, configs.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
 				if err != nil {
 					log.Error(err)
 					return
 				} else {
-					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), p.Namespace)
+					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 				}
 			}
 		}
@@ -58,15 +60,25 @@ func KubeCollector(configs *LogStream) {
 
 }
 
-func post2Server(logs []byte, url string) error {
+func httpPost(logs []byte, labels map[string]string, url string) error {
 
-	var err error
-
-	var http http.HTTP = http.NewClientHTTPRequests("POST", url, logs)
-
-	_, err = http.HTTP()
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(logs))
 	if err != nil {
 		return err
 	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	for key, value := range labels {
+		req.Header.Add(key, value)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
 	return nil
 }
