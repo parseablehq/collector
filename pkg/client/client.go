@@ -1,4 +1,4 @@
-package k8s
+package client
 
 import (
 	"bytes"
@@ -31,16 +31,15 @@ type getter interface {
 	GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) ([]string, error)
 }
 
+var KubeClient k8s = getKubeClientset()
+
 // k8s client struct
-type k8sClient struct {
+type client struct {
 	*kubernetes.Clientset
 }
 
-// init k8s interface
-var K8s k8s = getKubeClientset()
-
 // list pods method
-func (c *k8sClient) ListPods(namespace, selector string) (*corev1.PodList, error) {
+func (c *client) ListPods(namespace, selector string) (*corev1.PodList, error) {
 	pods, err := c.CoreV1().Pods(namespace).List(context.TODO(), v1.ListOptions{
 		LabelSelector: selector,
 	})
@@ -52,7 +51,7 @@ func (c *k8sClient) ListPods(namespace, selector string) (*corev1.PodList, error
 }
 
 // get pods method
-func (c *k8sClient) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) ([]string, error) {
+func (c *client) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) ([]string, error) {
 	req := c.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOptions)
 	podLogs, err := req.Stream(context.TODO())
 	if err != nil {
@@ -68,17 +67,9 @@ func (c *k8sClient) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOption
 	}
 
 	return strings.Split(buf.String(), "\n"), nil
-
 }
 
-func getKubeClientset() *k8sClient {
-	// var conf *rest.Config
-
-	// conf, err := clientcmd.BuildConfigFromFlags("", os.Getenv("HOME")+"/.kube/config")
-	// if err != nil {
-	// 	log.Printf("error in getting Kubeconfig: %v", err)
-	// }
-
+func getKubeClientset() *client {
 	// creates the in-cluster config
 	conf, err := rest.InClusterConfig()
 	if err != nil {
@@ -90,5 +81,5 @@ func getKubeClientset() *k8sClient {
 		log.Printf("error in getting clientset from Kubeconfig: %v", err)
 	}
 
-	return &k8sClient{cs}
+	return &client{cs}
 }

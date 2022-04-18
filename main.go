@@ -39,7 +39,6 @@ func main() {
 			defer wg.Done()
 			runKubeCollector(&logS)
 		}(logStream)
-
 	}
 	wg.Wait()
 }
