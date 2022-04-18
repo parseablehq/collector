@@ -1,8 +1,8 @@
 logStreams:
   - name: kubesystems
-    collectInterval: 3
     addLabels:
       system: kubernetes
+    collectInterval: 3
     collectFrom:
       - namespace: kube-system
         podSelector:

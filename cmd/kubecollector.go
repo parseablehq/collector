@@ -3,8 +3,8 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"kube-collector/pkg/client"
 	"kube-collector/pkg/collector"
-	"kube-collector/pkg/k8s"
 	"net/http"
 
 	"os"
@@ -25,7 +25,7 @@ func KubeCollector(configs *LogStream) {
 	for _, collectFrom := range configs.CollectFrom {
 		var podsList []*v1.PodList
 		for k, v := range collectFrom.PodSelector {
-			pods, err := k8s.K8s.ListPods(collectFrom.Namespace, k+"="+v)
+			pods, err := client.KubeClient.ListPods(collectFrom.Namespace, k+"="+v)
 			if err != nil {
 				log.Error(err)
 				return

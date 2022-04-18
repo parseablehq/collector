@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"kube-collector/pkg/k8s"
+	"kube-collector/pkg/client"
 	"kube-collector/pkg/store"
 
 	"strings"
@@ -10,7 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// logMessage is the log type.
+// logMessage represents a single log message entry
 type logMessage struct {
 	Timestamp string `json:"time"`
 	Log       string `json:"log"`
@@ -18,34 +18,26 @@ type logMessage struct {
 
 func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 
-	// poLogOptions
-	var podLogOpts corev1.PodLogOptions
-
-	// getTime on store for current pod
-	if store.GetTime(pod.GetName()) != (time.Time{}) {
-		var newLogTime int64
-		newLogTime = int64(time.Now().Sub(store.GetTime(pod.GetName())).Seconds())
-		podLogOpts = corev1.PodLogOptions{
-			SinceSeconds: &newLogTime,
-			Timestamps:   true,
-		}
-	} else {
-		podLogOpts = corev1.PodLogOptions{
-			Timestamps: true,
-		}
+	podLogOpts := corev1.PodLogOptions{
+		Timestamps: true,
 	}
 
-	// getPodLogs
-	podLogs, err := k8s.K8s.GetPodLogs(pod, podLogOpts)
+	lastLogTime := store.LastTimestamp(pod.GetName())
+	if lastLogTime != (time.Time{}) {
+		secsSinceLastLog := int64(time.Now().Sub(lastLogTime).Seconds())
+		podLogOpts.SinceSeconds = &secsSinceLastLog
+	}
+
+	podLogs, err := client.KubeClient.GetPodLogs(pod, podLogOpts)
 	if err != nil {
-		return []logMessage{}, err
+		return nil, err
 	}
 
 	if len(podLogs) > 1 {
 		// last line of the log
 		err := putTimeStamp(pod.GetName(), podLogs)
 		if err != nil {
-			return []logMessage{}, err
+			return nil, err
 		}
 
 		var logMessages []logMessage
@@ -79,6 +71,6 @@ func putTimeStamp(podName string, podLogs []string) error {
 		return err
 	}
 	// put poName to TimeStamp
-	store.PutPoNameTime(podName, getTimeStamp)
+	store.SetLastTimestamp(podName, getTimeStamp)
 	return err
 }
