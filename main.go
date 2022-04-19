@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-var config string
+var configPath string
 
 func init() {
-	flag.StringVar(&config, "config", "", "config file for kube-collector")
+	flag.StringVar(&configPath, "config", "", "config file for kube-collector")
 	flag.Parse()
-	if len(config) == 0 {
+	if len(configPath) == 0 {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -25,7 +25,7 @@ func init() {
 
 func main() {
 
-	config, err := cmd.ReadConfig(&config)
+	config, err := cmd.ReadConfig(&configPath)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -33,19 +33,26 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	for _, logStream := range config.LogStreams {
-		wg.Add(1)
-		go func(logS cmd.LogStream) {
-			defer wg.Done()
-			runKubeCollector(&logS)
-		}(logStream)
+	for _, streams := range config.LogStreams {
+		for _, logSpec := range streams.LogSpecs {
+			wg.Add(1)
+			go func(name string, logSpec cmd.LogSpec) {
+				defer wg.Done()
+				runKubeCollector(name, &logSpec)
+			}(streams.Name, logSpec)
+		}
 	}
 	wg.Wait()
 }
 
-func runKubeCollector(logStream *cmd.LogStream) {
-	ticker := time.NewTicker(time.Duration(logStream.CollectInterval) * time.Second)
+func runKubeCollector(name string, logSpec *cmd.LogSpec) {
+	interval, err := time.ParseDuration(logSpec.Interval)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	for range ticker.C {
-		cmd.KubeCollector(logStream)
+		cmd.KubeCollector(name, logSpec)
 	}
 }

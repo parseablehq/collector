@@ -20,46 +20,43 @@ type logMessage struct {
 	log       []string
 }
 
-func KubeCollector(configs *LogStream) {
+func KubeCollector(name string, logSpec *LogSpec) {
 
-	for _, collectFrom := range configs.CollectFrom {
-		var podsList []*v1.PodList
-		for k, v := range collectFrom.PodSelector {
-			pods, err := client.KubeClient.ListPods(collectFrom.Namespace, k+"="+v)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-			podsList = append(podsList, pods)
+	collectFrom := logSpec.CollectFrom
+	var podsList []*v1.PodList
+	for k, v := range collectFrom.PodSelector {
+		pods, err := client.KubeClient.ListPods(collectFrom.Namespace, k+"="+v)
+		if err != nil {
+			log.Error(err)
+			return
 		}
-		for _, po := range podsList {
-			for _, p := range po.Items {
-				logs, err := collector.GetPodLogs(p)
-				if len(logs) > 0 {
-					if err != nil {
-						log.Error(err)
-						return
-					} else {
-						log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
-					}
-					jLogs, err := json.Marshal(logs)
-					if err != nil {
-						return
-					}
+		podsList = append(podsList, pods)
+	}
+	for _, po := range podsList {
+		for _, p := range po.Items {
+			logs, err := collector.GetPodLogs(p)
+			if len(logs) > 0 {
+				if err != nil {
+					log.Error(err)
+					return
+				} else {
+					log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
+				}
+				jLogs, err := json.Marshal(logs)
+				if err != nil {
+					return
+				}
 
-					err = httpPost(jLogs, configs.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+configs.Name)
-					if err != nil {
-						log.Error(err)
-						return
-					} else {
-						log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
-					}
+				err = httpPost(jLogs, logSpec.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+name)
+				if err != nil {
+					log.Error(err)
+					return
+				} else {
+					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 				}
 			}
 		}
-
 	}
-
 }
 
 func httpPost(logs []byte, labels map[string]string, url string) error {
