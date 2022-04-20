@@ -1,12 +1,22 @@
 logStreams:
-  - name: kubesystems
-    addLabels:
-      system: kubernetes
-    collectInterval: 3
-    collectFrom:
-      - namespace: kube-system
-        podSelector:
-          tier: node
+  - name: backend
+    logSpec:
+      - collectionInterval: 3s
+        collectFrom: 
+          namespace: streaming
+          podSelector: 
+            app: kafka
+        addLabels: 
+          app: kafka
+          namespace: streaming
+      - collectionInterval: 10s
+        collectFrom: 
+          namespace: storage
+          podSelector: 
+            app: minio
+        addLabels: 
+          app: minio
+          namespace: storage
 
 env:
  PARSEABLE_URL: http://api.parseable.io

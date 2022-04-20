@@ -7,17 +7,23 @@ import (
 )
 
 type LogConfig struct {
-	LogStreams []LogStream `yaml:"logStreams"`
+	LogStreams []LogStream `yaml:"logStream"`
 }
 
 type LogStream struct {
-	Name            string            `yaml:"name"`
-	AddLabels       map[string]string `yaml:"addLabels"`
-	CollectInterval int               `yaml:"collectInterval"`
-	CollectFrom     []struct {
-		Namespace   string            `yaml:"namespace"`
-		PodSelector map[string]string `yaml:"podSelector"`
-	} `yaml:"collectFrom"`
+	Name     string    `yaml:"name"`
+	LogSpecs []LogSpec `yaml:"logSpec"`
+}
+
+type LogSpec struct {
+	AddLabels   map[string]string `yaml:"addLabels"`
+	Interval    string            `yaml:"collectionInterval"`
+	CollectFrom CollectFrom       `yaml:"collectFrom"`
+}
+
+type CollectFrom struct {
+	Namespace   string            `yaml:"namespace"`
+	PodSelector map[string]string `yaml:"podSelector"`
 }
 
 func ReadConfig(path *string) (*LogConfig, error) {
