@@ -8,17 +8,10 @@ import (
 	"net/http"
 
 	"os"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 )
-
-// logMessage is the CRI internal log type.
-type logMessage struct {
-	timestamp time.Time
-	log       []string
-}
 
 func KubeCollector(name string, logSpec *LogSpec) {
 
