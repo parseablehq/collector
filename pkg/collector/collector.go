@@ -28,12 +28,15 @@ type logMetadata struct {
 func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 
 	for _, container := range pod.Spec.Containers {
+		podContainerName := pod.GetName() + "/" + container.Name
 		podLogOpts := corev1.PodLogOptions{
 			Timestamps: true,
 			Container:  container.Name,
 		}
 
-		lastLogTime := store.LastTimestamp(pod.GetName())
+		// use a combination of pod and container name to store the last
+		// time stamp. This ensure we can uniquely fetch a container's log
+		lastLogTime := store.LastTimestamp(podContainerName)
 		if lastLogTime != (time.Time{}) {
 			secsSinceLastLog := int64(time.Now().Sub(lastLogTime).Seconds())
 			podLogOpts.SinceSeconds = &secsSinceLastLog
@@ -46,7 +49,7 @@ func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 
 		if len(podLogs) > 1 {
 			// last line of the log
-			if err := putTimeStamp(pod.GetName(), podLogs); err != nil {
+			if err := putTimeStamp(podContainerName, podLogs); err != nil {
 				return nil, err
 			}
 			var logMessages []logMessage

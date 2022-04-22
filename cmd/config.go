@@ -6,17 +6,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type LogConfig struct {
-	LogStreams []LogStream `yaml:"logStream"`
+type CollectorConfig struct {
+	LogStreams []LogStream `yaml:"logStreams"`
 }
 
 type LogStream struct {
-	Name     string    `yaml:"name"`
-	LogSpecs []LogSpec `yaml:"logSpec"`
+	Name    string  `yaml:"name"`
+	LogSpec LogSpec `yaml:"logSpec"`
 }
 
 type LogSpec struct {
-	AddLabels   map[string]string `yaml:"addLabels"`
+	AddTags     map[string]string `yaml:"tagsToAdd"`
 	Interval    string            `yaml:"collectionInterval"`
 	CollectFrom CollectFrom       `yaml:"collectFrom"`
 }
@@ -26,13 +26,13 @@ type CollectFrom struct {
 	PodSelector map[string]string `yaml:"podSelector"`
 }
 
-func ReadConfig(path *string) (*LogConfig, error) {
+func ReadConfig(path *string) (*CollectorConfig, error) {
 	configfile, err := ioutil.ReadFile(*path)
 	if err != nil {
 		return nil, err
 	}
 
-	var logConfig LogConfig
+	var logConfig CollectorConfig
 
 	err = yaml.Unmarshal([]byte(configfile), &logConfig)
 	if err != nil {

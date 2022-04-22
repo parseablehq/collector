@@ -40,7 +40,7 @@ func KubeCollector(name string, logSpec *LogSpec) {
 					return
 				}
 
-				err = httpPost(jLogs, logSpec.AddLabels, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+name)
+				err = httpPost(jLogs, logSpec.AddTags, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+name)
 				if err != nil {
 					log.Error(err)
 					return
