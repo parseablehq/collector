@@ -33,14 +33,12 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	for _, streams := range config.LogStreams {
-		for _, logSpec := range streams.LogSpecs {
-			wg.Add(1)
-			go func(name string, logSpec cmd.LogSpec) {
-				defer wg.Done()
-				runKubeCollector(name, &logSpec)
-			}(streams.Name, logSpec)
-		}
+	for _, stream := range config.LogStreams {
+		wg.Add(1)
+		go func(name string, logSpec cmd.LogSpec) {
+			defer wg.Done()
+			runKubeCollector(name, &logSpec)
+		}(stream.Name, stream.LogSpec)
 	}
 	wg.Wait()
 }

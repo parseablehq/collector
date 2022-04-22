@@ -1,22 +1,24 @@
 logStreams:
   - name: backend
     logSpec:
-      - collectionInterval: 3s
-        collectFrom: 
-          namespace: streaming
-          podSelector: 
-            app: kafka
-        addLabels: 
+      collectionInterval: 3s
+      collectFrom: 
+        namespace: streaming
+        podSelector: 
           app: kafka
-          namespace: streaming
-      - collectionInterval: 10s
-        collectFrom: 
-          namespace: storage
-          podSelector: 
-            app: minio
-        addLabels: 
+      tagsToAdd: 
+        app: kafka
+        namespace: streaming
+  - name: backend
+    logSpec:
+      collectionInterval: 3s
+      collectFrom: 
+        namespace: storage
+        podSelector: 
           app: minio
-          namespace: storage
+      tagsToAdd:
+        app: minio
+        namespace: storage
 
 env:
  PARSEABLE_URL: http://api.parseable.io
