@@ -1,29 +1,25 @@
-logStreams:
-  - name: backend
-    logSpec:
-      collectionInterval: 3s
-      collectFrom: 
-        namespace: streaming
-        podSelector: 
-          app: kafka
-      tagsToAdd: 
-        app: kafka
-        namespace: streaming
-  - name: backend
-    logSpec:
-      collectionInterval: 3s
-      collectFrom: 
-        namespace: storage
-        podSelector: 
-          app: minio
-      tagsToAdd:
-        app: minio
-        namespace: storage
-
-env:
- PARSEABLE_URL: http://api.parseable.io
-
-replicaCount: 1
+## Kubec configuration
+kubec:
+  config:
+    parseable_url: http://api.parseable.io
+    logStreams:
+      - name: backend
+        logSpec:
+          collectInterval: 5s
+          collectFrom: 
+            namespace: streaming
+            podSelector: 
+              app: kafka
+      - name: frontend
+        logSpec:
+          collectInterval: 10s
+          collectFrom: 
+            namespace: storage
+            podSelector:
+              app: minio
+          tagsToAdd:
+              app: app
+              
 
 image:
   repository: parseable/kube-collector
@@ -57,7 +53,6 @@ resources:
   limits:
     cpu: 100m
     memory: 128Mi
-
 
 nodeSelector: {}
 
