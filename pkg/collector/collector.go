@@ -23,6 +23,7 @@ type logMetadata struct {
 	ContainerName  string
 	ContainerImage string
 	PodName        string
+	Namespace      string
 }
 
 func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
@@ -60,6 +61,7 @@ func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 						Timestamp: newLogMessage[0],
 						Log:       strings.Join(newLogMessage[1:], " "),
 						LogMeta: logMetadata{
+							Namespace:      pod.GetNamespace(),
 							Host:           pod.Status.HostIP,
 							Source:         pod.Status.PodIP,
 							ContainerName:  container.Name,

@@ -42,6 +42,8 @@ spec:
             - name: {{ $key }}
               value: {{ tpl $value $ | quote }}
             {{- end }}
+            - name: PARSEABLE_URL
+              value: {{ .Values.kubec.config.parseable_url }}
           ports:
             - name: http
               containerPort: 80

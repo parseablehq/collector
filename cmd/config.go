@@ -33,7 +33,7 @@ func ReadConfig(path *string) (*CollectorConfig, error) {
 	}
 
 	var logConfig CollectorConfig
-
+	// TODO -- add defaults for collectInterval and tagsToAdd
 	err = yaml.Unmarshal([]byte(configfile), &logConfig)
 	if err != nil {
 		return nil, err
