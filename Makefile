@@ -30,7 +30,9 @@ helm-update:
 	helm upgrade --install \
 	kube-collector \
 	helm/kube-collector \
-	-f helm/kube-collector/values.yaml --namespace kube-collector
+	-f helm/kube-collector/values.yaml \
+	--create-namespace \
+	--namespace kube-collector
 
 # helm template
 helm-template:
