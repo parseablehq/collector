@@ -8,7 +8,6 @@ import (
 
 	"os"
 	"sync"
-	"time"
 )
 
 var configPath string
@@ -35,22 +34,10 @@ func main() {
 
 	for _, stream := range config.LogStreams {
 		wg.Add(1)
-		go func(name string, logSpec cmd.LogSpec) {
+		go func(streamName string, logSpec cmd.LogSpec) {
 			defer wg.Done()
-			runKubeCollector(name, &logSpec)
+			cmd.RunKubeCollector(streamName, &logSpec)
 		}(stream.Name, stream.LogSpec)
 	}
 	wg.Wait()
-}
-
-func runKubeCollector(name string, logSpec *cmd.LogSpec) {
-	interval, err := time.ParseDuration(logSpec.Interval)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-	ticker := time.NewTicker(interval)
-	for range ticker.C {
-		cmd.KubeCollector(name, logSpec)
-	}
 }
