@@ -13,8 +13,10 @@ import (
 )
 
 func RunKubeCollector(streamName string, logSpec *LogSpec) {
+	// Create stream
 	if err := httpPut(parseableStreamURL(streamName)); err != nil {
-		log.Error(err)
+		// TODO: Make sure to ignore the error if the stream already exists
+		log.Error("Failed to create Log Stream due to error: ", err.Error())
 		return
 	} else {
 		log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
