@@ -49,7 +49,7 @@ func runKubeCollector(name string, logSpec *cmd.LogSpec) {
 		log.Error(err)
 		os.Exit(1)
 	}
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(interval)
 	for range ticker.C {
 		cmd.KubeCollector(name, logSpec)
 	}
