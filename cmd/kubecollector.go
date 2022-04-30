@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"kube-collector/pkg/client"
 	"kube-collector/pkg/collector"
-	"net/http"
+	"time"
 
 	"os"
 
@@ -13,7 +12,26 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func KubeCollector(name string, logSpec *LogSpec) {
+func RunKubeCollector(streamName string, logSpec *LogSpec) {
+	if err := httpPut(parseableStreamURL(streamName)); err != nil {
+		log.Error(err)
+		return
+	} else {
+		log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
+	}
+
+	interval, err := time.ParseDuration(logSpec.CollectInterval)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	ticker := time.NewTicker(interval)
+	for range ticker.C {
+		kubeCollector(streamName, logSpec)
+	}
+}
+
+func kubeCollector(streamName string, logSpec *LogSpec) {
 
 	collectFrom := logSpec.CollectFrom
 	var podsList []*v1.PodList
@@ -40,8 +58,7 @@ func KubeCollector(name string, logSpec *LogSpec) {
 					return
 				}
 
-				err = httpPost(jLogs, logSpec.AddTags, os.Getenv("PARSEABLE_URL")+"/api/v1/stream/"+name)
-				if err != nil {
+				if err = httpPost(jLogs, logSpec.AddTags, parseableStreamURL(streamName)); err != nil {
 					log.Error(err)
 					return
 				} else {
@@ -50,27 +67,4 @@ func KubeCollector(name string, logSpec *LogSpec) {
 			}
 		}
 	}
-}
-
-func httpPost(logs []byte, labels map[string]string, url string) error {
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(logs))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	for key, value := range labels {
-		req.Header.Add(key, value)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	return nil
 }
