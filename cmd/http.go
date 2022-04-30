@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+const METADATA_LABEL = "X-P-META-"
+
 func parseableStreamURL(streamName string) string {
 	return os.Getenv("PARSEABLE_URL") + "/api/v1/stream/" + streamName
 }
@@ -17,7 +19,7 @@ func httpPost(logs []byte, labels map[string]string, url string) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	for key, value := range labels {
-		req.Header.Add(key, value)
+		req.Header.Add(METADATA_LABEL+key, value)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
