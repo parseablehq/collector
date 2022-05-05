@@ -1,38 +1,33 @@
-package cmd
+package http
 
 import (
 	"bytes"
 	"net/http"
-	"os"
 )
 
 const METADATA_LABEL = "X-P-META-"
 
-func parseableStreamURL(streamName string) string {
-	return os.Getenv("PARSEABLE_URL") + "/api/v1/stream/" + streamName
-}
-
-type httpParseable interface {
-	doHttpRequest() error
+type HttpParseable interface {
+	DoHttpRequest() (*http.Response, error)
 }
 
 // httpRequest holds all the fields needed for a HTTP request
 // to parseable server.
-type httpRequest struct {
+type HttpRequest struct {
 	method string
 	url    string
 	labels map[string]string
 	body   []byte
 }
 
-func newHttpRequest(method, url string, labels map[string]string, body []byte) *httpRequest {
-	return &httpRequest{method: method, url: url, labels: labels, body: body}
+func NewHttpRequest(method, url string, labels map[string]string, body []byte) *HttpRequest {
+	return &HttpRequest{method: method, url: url, labels: labels, body: body}
 }
 
-func (h *httpRequest) doHttpRequest() error {
+func (h *HttpRequest) DoHttpRequest() (*http.Response, error) {
 	req, err := http.NewRequest(h.method, h.url, bytes.NewBuffer(h.body))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -43,8 +38,10 @@ func (h *httpRequest) doHttpRequest() error {
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	defer resp.Body.Close()
-	return nil
+
+	return resp, nil
 }

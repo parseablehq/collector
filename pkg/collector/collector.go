@@ -1,8 +1,13 @@
 package collector
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"kube-collector/pkg/client"
+	"kube-collector/pkg/http"
 	"kube-collector/pkg/store"
+	"kube-collector/pkg/utils"
 
 	"strings"
 	"time"
@@ -26,7 +31,7 @@ type logMetadata struct {
 	Namespace      string
 }
 
-func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
+func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 
 	for _, container := range pod.Spec.Containers {
 		podContainerName := pod.GetName() + "/" + container.Name
@@ -35,6 +40,32 @@ func GetPodLogs(pod corev1.Pod) ([]logMessage, error) {
 			Container:  container.Name,
 		}
 
+		if store.IsStoreEmpty(podContainerName) {
+
+			query := fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, pod.GetName(), container.Name)
+			createQuery := map[string]string{
+				"query": query,
+			}
+
+			jQuery, err := json.Marshal(createQuery)
+			if err != nil {
+				return nil, err
+			}
+			var http http.HttpParseable = http.NewHttpRequest("POST", utils.GetParseableQueryURL(), nil, jQuery)
+			resp, err := http.DoHttpRequest()
+			if err != nil {
+				return nil, err
+			}
+			respData, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			time, err := time.Parse(time.RFC3339, string(respData))
+			if err != nil {
+				return nil, err
+			}
+			store.SetLastTimestamp(podContainerName, time)
+		}
 		// use a combination of pod and container name to store the last
 		// time stamp. This ensure we can uniquely fetch a container's log
 		lastLogTime := store.LastTimestamp(podContainerName)

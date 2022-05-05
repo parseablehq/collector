@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"kube-collector/pkg/client"
 	"kube-collector/pkg/collector"
+	"kube-collector/pkg/http"
+	"kube-collector/pkg/utils"
+
 	"time"
 
 	"os"
@@ -15,9 +18,10 @@ import (
 func RunKubeCollector(streamName string, logSpec *LogSpec) {
 	// Create stream
 
-	var http httpParseable = newHttpRequest("PUT", parseableStreamURL(streamName), nil, nil)
+	var http http.HttpParseable = http.NewHttpRequest("PUT", utils.GetParseableStreamURL(streamName), nil, nil)
 
-	if err := http.doHttpRequest(); err != nil {
+	_, err := http.DoHttpRequest()
+	if err != nil {
 		// TODO: Make sure to ignore the error if the stream already exists
 		log.Error("Failed to create Log Stream due to error: ", err.Error())
 		return
@@ -50,7 +54,7 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 	}
 	for _, po := range podsList {
 		for _, p := range po.Items {
-			logs, err := collector.GetPodLogs(p)
+			logs, err := collector.GetPodLogs(p, streamName)
 			if len(logs) > 0 {
 				if err != nil {
 					log.Error(err)
@@ -62,9 +66,10 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
-				var http httpParseable = newHttpRequest("POST", parseableStreamURL(streamName), logSpec.AddTags, jLogs)
+				var http http.HttpParseable = http.NewHttpRequest("POST", utils.GetParseableStreamURL(streamName), logSpec.AddTags, jLogs)
 
-				if err = http.doHttpRequest(); err != nil {
+				_, err = http.DoHttpRequest()
+				if err != nil {
 					log.Error(err)
 					return
 				} else {

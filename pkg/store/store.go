@@ -11,3 +11,10 @@ func LastTimestamp(poName string) time.Time {
 func SetLastTimestamp(poName string, time time.Time) {
 	poNameTime[poName] = time
 }
+
+func IsStoreEmpty(poName string) bool {
+	if _, ok := poNameTime[poName]; ok {
+		return true
+	}
+	return false
+}
