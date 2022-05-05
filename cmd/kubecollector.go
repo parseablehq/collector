@@ -14,7 +14,10 @@ import (
 
 func RunKubeCollector(streamName string, logSpec *LogSpec) {
 	// Create stream
-	if err := httpPut(parseableStreamURL(streamName)); err != nil {
+
+	var http httpParseable = newHttpRequest("PUT", parseableStreamURL(streamName), nil, nil)
+
+	if err := http.doHttpRequest(); err != nil {
 		// TODO: Make sure to ignore the error if the stream already exists
 		log.Error("Failed to create Log Stream due to error: ", err.Error())
 		return
@@ -59,8 +62,9 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
+				var http httpParseable = newHttpRequest("POST", parseableStreamURL(streamName), logSpec.AddTags, jLogs)
 
-				if err = httpPost(jLogs, logSpec.AddTags, parseableStreamURL(streamName)); err != nil {
+				if err = http.doHttpRequest(); err != nil {
 					log.Error(err)
 					return
 				} else {
