@@ -41,7 +41,5 @@ func (h *HttpRequest) DoHttpRequest() (*http.Response, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
 	return resp, nil
 }

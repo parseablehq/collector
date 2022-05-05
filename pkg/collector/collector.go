@@ -40,7 +40,9 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			Container:  container.Name,
 		}
 
-		if store.IsStoreEmpty(podContainerName) {
+		fmt.Println(store.IsStoreEmpty(podContainerName))
+
+		if store.IsStoreEmpty(podContainerName) == true {
 
 			query := fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, pod.GetName(), container.Name)
 			createQuery := map[string]string{
@@ -51,19 +53,26 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			if err != nil {
 				return nil, err
 			}
-			var http http.HttpParseable = http.NewHttpRequest("POST", utils.GetParseableQueryURL(), nil, jQuery)
+
+			var http http.HttpParseable = http.NewHttpRequest("GET", utils.GetParseableQueryURL(), nil, jQuery)
 			resp, err := http.DoHttpRequest()
 			if err != nil {
 				return nil, err
 			}
+
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				return nil, err
 			}
+
+			fmt.Println("helll")
+			fmt.Println(string(respData))
 			time, err := time.Parse(time.RFC3339, string(respData))
 			if err != nil {
 				return nil, err
 			}
+
+			fmt.Println(time)
 			store.SetLastTimestamp(podContainerName, time)
 		}
 		// use a combination of pod and container name to store the last
