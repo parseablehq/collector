@@ -40,8 +40,6 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			Container:  container.Name,
 		}
 
-		fmt.Println(store.IsStoreEmpty(podContainerName))
-
 		if store.IsStoreEmpty(podContainerName) == true {
 
 			query := fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, pod.GetName(), container.Name)
@@ -60,21 +58,29 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 				return nil, err
 			}
 
+			type maxTimeQuery []struct {
+				MAXSystemsTime string `json:"MAX(systems.time)"`
+			}
+
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				return nil, err
 			}
-
-			fmt.Println("helll")
-			fmt.Println(string(respData))
-			time, err := time.Parse(time.RFC3339, string(respData))
+			var mtq maxTimeQuery
+			err = json.Unmarshal(respData, &mtq)
 			if err != nil {
 				return nil, err
 			}
 
-			fmt.Println(time)
-			store.SetLastTimestamp(podContainerName, time)
+			if mtq != nil {
+				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
+				if err != nil {
+					return nil, err
+				}
+				store.SetLastTimestamp(podContainerName, time)
+			}
 		}
+
 		// use a combination of pod and container name to store the last
 		// time stamp. This ensure we can uniquely fetch a container's log
 		lastLogTime := store.LastTimestamp(podContainerName)
@@ -129,5 +135,6 @@ func putTimeStamp(podName string, podLogs []string) error {
 	}
 	// put poName to TimeStamp
 	store.SetLastTimestamp(podName, getTimeStamp)
+	fmt.Println(store.PoNameTime)
 	return err
 }
