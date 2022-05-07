@@ -47,10 +47,10 @@ func main() {
 
 	for _, stream := range config.LogStreams {
 		wg.Add(1)
-		go func(streamName string, logSpec cmd.LogSpec) {
+		go func(stream cmd.LogStream) {
 			defer wg.Done()
-			cmd.RunKubeCollector(streamName, &logSpec)
-		}(stream.Name, stream.LogSpec)
+			cmd.RunKubeCollector(&stream)
+		}(stream)
 	}
 	wg.Wait()
 }

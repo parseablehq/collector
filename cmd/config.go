@@ -30,11 +30,7 @@ type CollectorConfig struct {
 }
 
 type LogStream struct {
-	Name    string  `yaml:"name"`
-	LogSpec LogSpec `yaml:"logSpec"`
-}
-
-type LogSpec struct {
+	Name            string            `yaml:"name"`
 	Tags            map[string]string `yaml:"tags"`
 	CollectInterval string            `yaml:"collectInterval"`
 	CollectFrom     CollectFrom       `yaml:"collectFrom"`
@@ -63,8 +59,8 @@ func ReadConfig(path *string) (*CollectorConfig, error) {
 
 func (logConfig *CollectorConfig) ensureDefaults() {
 	for _, logStream := range logConfig.LogStreams {
-		if logStream.LogSpec.CollectInterval == "" {
-			logStream.LogSpec.CollectInterval = DEFAULT_LOG_COLLECT_INTERVAL
+		if logStream.CollectInterval == "" {
+			logStream.CollectInterval = DEFAULT_LOG_COLLECT_INTERVAL
 		}
 	}
 }

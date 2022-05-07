@@ -29,25 +29,25 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func RunKubeCollector(streamName string, logSpec *LogSpec) {
-	if err := parseable.CreateStream(streamName); err != nil {
+func RunKubeCollector(stream *LogStream) {
+	if err := parseable.CreateStream(stream.Name); err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
-	log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
-	interval, err := time.ParseDuration(logSpec.CollectInterval)
+	log.Infof("Successfully created Log Stream [%s] on server [%s]", stream.Name, os.Getenv("PARSEABLE_URL"))
+	interval, err := time.ParseDuration(stream.CollectInterval)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 	ticker := time.NewTicker(interval)
 	for range ticker.C {
-		kubeCollector(streamName, logSpec)
+		kubeCollector(stream)
 	}
 }
 
-func kubeCollector(streamName string, logSpec *LogSpec) {
-	collectFrom := logSpec.CollectFrom
+func kubeCollector(stream *LogStream) {
+	collectFrom := stream.CollectFrom
 	var podsList []*v1.PodList
 	for k, v := range collectFrom.PodSelector {
 		pods, err := client.KubeClient.ListPods(collectFrom.Namespace, k+"="+v)
@@ -59,7 +59,7 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 	}
 	for _, po := range podsList {
 		for _, p := range po.Items {
-			logs, err := collector.GetPodLogs(p, streamName)
+			logs, err := collector.GetPodLogs(p, stream.Name)
 			if err != nil {
 				log.Error(err)
 				return
@@ -75,7 +75,7 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
-				if err := parseable.PostLogs(streamName, jLogs, logSpec.Tags); err != nil {
+				if err := parseable.PostLogs(stream.Name, jLogs, stream.Tags); err != nil {
 					log.Error(err)
 				}
 				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
