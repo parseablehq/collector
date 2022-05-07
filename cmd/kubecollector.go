@@ -1,11 +1,25 @@
+// Copyright (C) 2022 Parseable, Inc.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package cmd
 
 import (
 	"encoding/json"
 	"kube-collector/pkg/client"
 	"kube-collector/pkg/collector"
-	"kube-collector/pkg/http"
-	"kube-collector/pkg/utils"
+	"kube-collector/pkg/parseable"
 
 	"time"
 
@@ -16,19 +30,11 @@ import (
 )
 
 func RunKubeCollector(streamName string, logSpec *LogSpec) {
-	// Create stream
-
-	var http http.HttpParseable = http.NewHttpRequest("PUT", utils.GetParseableStreamURL(streamName), nil, nil)
-
-	_, err := http.DoHttpRequest()
-	if err != nil {
-		// TODO: Make sure to ignore the error if the stream already exists
-		log.Error("Failed to create Log Stream due to error: ", err.Error())
-		return
-	} else {
-		log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
+	if err := parseable.CreateStream(streamName); err != nil {
+		log.Error(err)
+		os.Exit(1)
 	}
-
+	log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
 	interval, err := time.ParseDuration(logSpec.CollectInterval)
 	if err != nil {
 		log.Error(err)
@@ -66,15 +72,10 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
-				var http http.HttpParseable = http.NewHttpRequest("POST", utils.GetParseableStreamURL(streamName), logSpec.AddTags, jLogs)
-
-				_, err = http.DoHttpRequest()
-				if err != nil {
+				if err := parseable.PostLogs(streamName, jLogs, logSpec.Tags); err != nil {
 					log.Error(err)
-					return
-				} else {
-					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 				}
+				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 			}
 		}
 	}

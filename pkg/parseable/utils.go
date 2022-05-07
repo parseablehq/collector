@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Parseable, Inc.
+// Copyright (C) 2022 nitish
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -13,22 +13,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package store
+package parseable
 
-import (
-	"time"
-)
+import "os"
 
-var PoNameTime = make(map[string]time.Time)
-
-func LastTimestamp(poName string) time.Time {
-	return PoNameTime[poName]
+func streamURL(streamName string) string {
+	return os.Getenv("PARSEABLE_URL") + "/api/v1/stream/" + streamName
 }
 
-func SetLastTimestamp(poName string, time time.Time) {
-	PoNameTime[poName] = time
-}
-
-func IsEmpty() bool {
-	return len(PoNameTime) == 0
+func queryURL() string {
+	return os.Getenv("PARSEABLE_URL") + "/api/v1/query"
 }

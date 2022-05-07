@@ -13,22 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package store
+package parseable_test
 
-import (
-	"time"
-)
+import "testing"
 
-var PoNameTime = make(map[string]time.Time)
+func TestHttp(t *testing.T) {
 
-func LastTimestamp(poName string) time.Time {
-	return PoNameTime[poName]
-}
-
-func SetLastTimestamp(poName string, time time.Time) {
-	PoNameTime[poName] = time
-}
-
-func IsEmpty() bool {
-	return len(PoNameTime) == 0
 }

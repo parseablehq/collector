@@ -1,13 +1,25 @@
+// Copyright (C) 2022 Parseable, Inc.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package collector
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"kube-collector/pkg/client"
-	"kube-collector/pkg/http"
+	"kube-collector/pkg/parseable"
 	"kube-collector/pkg/store"
-	"kube-collector/pkg/utils"
 
 	"strings"
 	"time"
@@ -40,34 +52,8 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			Container:  container.Name,
 		}
 
-		if store.IsStoreEmpty(podContainerName) == true {
-
-			query := fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, pod.GetName(), container.Name)
-			createQuery := map[string]string{
-				"query": query,
-			}
-
-			jQuery, err := json.Marshal(createQuery)
-			if err != nil {
-				return nil, err
-			}
-
-			var http http.HttpParseable = http.NewHttpRequest("GET", utils.GetParseableQueryURL(), nil, jQuery)
-			resp, err := http.DoHttpRequest()
-			if err != nil {
-				return nil, err
-			}
-
-			type maxTimeQuery []struct {
-				MAXSystemsTime string `json:"MAX(systems.time)"`
-			}
-
-			respData, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			var mtq maxTimeQuery
-			err = json.Unmarshal(respData, &mtq)
+		if store.IsEmpty() == true {
+			mtq, err := parseable.LastLogTime(streamName, pod.Name, container.Name)
 			if err != nil {
 				return nil, err
 			}
