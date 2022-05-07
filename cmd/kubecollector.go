@@ -47,7 +47,6 @@ func RunKubeCollector(streamName string, logSpec *LogSpec) {
 }
 
 func kubeCollector(streamName string, logSpec *LogSpec) {
-	log.Infof("Hello1")
 	collectFrom := logSpec.CollectFrom
 	var podsList []*v1.PodList
 	for k, v := range collectFrom.PodSelector {
@@ -58,11 +57,8 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 		}
 		podsList = append(podsList, pods)
 	}
-	log.Infof("Hello2")
 	for _, po := range podsList {
-		log.Infof("Hello3")
 		for _, p := range po.Items {
-			log.Infof("Hello4 %s", p.Name)
 			logs, err := collector.GetPodLogs(p, streamName)
 			if err != nil {
 				log.Error(err)
@@ -79,7 +75,6 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
-				log.Infof("Hello5 %s", p.Name)
 				if err := parseable.PostLogs(streamName, jLogs, logSpec.Tags); err != nil {
 					log.Error(err)
 				}

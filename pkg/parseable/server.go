@@ -19,8 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type MaxTimeQuery []struct {
@@ -42,14 +40,12 @@ func CreateStream(streamName string) error {
 }
 
 func PostLogs(streamName string, logs []byte, tags map[string]string) error {
-	log.Infof("Hello5 %s logs %s", streamName, string(logs))
 	req := newRequest("POST", streamURL(streamName), tags, logs)
 	if resp, err := req.Do(); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
 		return fmt.Errorf("unexpected status code: %d while posting log data to stream: %s", resp.StatusCode, streamName)
 	}
-	log.Infof("Hello6 %s logs %s", streamName, string(logs))
 	return nil
 }
 
