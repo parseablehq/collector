@@ -1,13 +1,22 @@
 package store
 
-import "time"
+import (
+	"time"
+)
 
-var poNameTime = make(map[string]time.Time)
+var PoNameTime = make(map[string]time.Time)
 
 func LastTimestamp(poName string) time.Time {
-	return poNameTime[poName]
+	return PoNameTime[poName]
 }
 
 func SetLastTimestamp(poName string, time time.Time) {
-	poNameTime[poName] = time
+	PoNameTime[poName] = time
+}
+
+func IsStoreEmpty(poName string) bool {
+	if len(PoNameTime) == 0 {
+		return true
+	}
+	return false
 }
