@@ -3,47 +3,42 @@ kubec:
   config:
     parseable_url: http://api.parseable.io
     logStreams:
-      - name: backend
+      ## First LogStream Configuration
+      - name: appsadasd1
         logSpec:
-          collectInterval: 5s
+          collectInterval: 20s
           collectFrom: 
-            namespace: streaming
+            namespace: java-app
             podSelector: 
-              app: kafka
-      - name: frontend
+              app: java-app
+          tags:
+              language: java
+              version: 1.2.5
+      ## Second LogStream configuration
+      - name: appasdad2
         logSpec:
           collectInterval: 10s
           collectFrom: 
-            namespace: storage
-            podSelector:
-              app: minio
-          tagsToAdd:
-              app: app
-              
+            namespace: go-app
+            podSelector: 
+              app: go-app
+          tags:
+              language: go
+              version: 1.2.6
 
+## Kubec deployment configurtion
 image:
   repository: parseable/kube-collector
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "minor-fixes3"
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
+  annotations: {}
 
 rbac:
   create: true
-
-podAnnotations: {}
-
-podSecurityContext: {}
-
-securityContext: {}
 
 service:
   type: ClusterIP
@@ -54,8 +49,9 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
 nodeSelector: {}
-
-tolerations: []
-
 affinity: {}
+tolerations: []

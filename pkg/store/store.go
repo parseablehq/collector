@@ -21,8 +21,9 @@ import (
 
 var PoNameTime = make(map[string]time.Time)
 
-func LastTimestamp(poName string) time.Time {
-	return PoNameTime[poName]
+func LastTimestamp(poName string) (time.Time, bool) {
+	time, ok := PoNameTime[poName]
+	return time, ok
 }
 
 func SetLastTimestamp(poName string, time time.Time) {

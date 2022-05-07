@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type MaxTimeQuery []struct {
@@ -40,12 +42,14 @@ func CreateStream(streamName string) error {
 }
 
 func PostLogs(streamName string, logs []byte, tags map[string]string) error {
+	log.Infof("Hello5 %s logs %s", streamName, string(logs))
 	req := newRequest("POST", streamURL(streamName), tags, logs)
 	if resp, err := req.Do(); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
 		return fmt.Errorf("unexpected status code: %d while posting log data to stream: %s", resp.StatusCode, streamName)
 	}
+	log.Infof("Hello6 %s logs %s", streamName, string(logs))
 	return nil
 }
 
@@ -63,8 +67,17 @@ func LastLogTime(streamName, podName, containerName string) (MaxTimeQuery, error
 	resp, err := req.Do()
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode == 500 {
+		// This is the case where the log stream is empty
+		respData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		if string(respData) == "Error during planning: No data file found" {
+			return nil, nil
+		}
 	} else if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("unexpected status code: %d while posting log data to stream: %s", resp.StatusCode, streamName)
+		return nil, fmt.Errorf("unexpected status code: %d while querying log data timestamp in stream: %s", resp.StatusCode, streamName)
 	}
 
 	respData, err := ioutil.ReadAll(resp.Body)

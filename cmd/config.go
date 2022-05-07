@@ -35,7 +35,7 @@ type LogStream struct {
 }
 
 type LogSpec struct {
-	Tags            map[string]string `yaml:"tagsToAdd"`
+	Tags            map[string]string `yaml:"tags"`
 	CollectInterval string            `yaml:"collectInterval"`
 	CollectFrom     CollectFrom       `yaml:"collectFrom"`
 }

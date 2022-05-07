@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -51,26 +52,31 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			Timestamps: true,
 			Container:  container.Name,
 		}
-
-		if store.IsEmpty() == true {
+		log.Infof("Hello8 %s", podContainerName)
+		// use a combination of pod and container name to store the last
+		// time stamp. This ensure we can uniquely fetch a container's log
+		lastLogTime, ok := store.LastTimestamp(podContainerName)
+		log.Infof("Hello9 %s %v", podContainerName, lastLogTime)
+		if lastLogTime == (time.Time{}) || !ok {
+			log.Infof("Hello10 %s %v", podContainerName, lastLogTime)
 			mtq, err := parseable.LastLogTime(streamName, pod.Name, container.Name)
 			if err != nil {
 				return nil, err
 			}
-
+			log.Infof("Hello11 %s %v", podContainerName, lastLogTime)
 			if mtq != nil {
+				log.Infof("Hello12 %s %v", podContainerName, mtq)
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
 					return nil, err
 				}
 				store.SetLastTimestamp(podContainerName, time)
+				lastLogTime = time
 			}
 		}
 
-		// use a combination of pod and container name to store the last
-		// time stamp. This ensure we can uniquely fetch a container's log
-		lastLogTime := store.LastTimestamp(podContainerName)
 		if lastLogTime != (time.Time{}) {
+			log.Infof("Hello13 %s %v", podContainerName, lastLogTime)
 			secsSinceLastLog := int64(time.Now().Sub(lastLogTime).Seconds())
 			podLogOpts.SinceSeconds = &secsSinceLastLog
 		}
@@ -79,7 +85,7 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		log.Infof("Hello14 %s %v %v", podContainerName, lastLogTime, podLogs)
 		if len(podLogs) > 1 {
 			// last line of the log
 			if err := putTimeStamp(podContainerName, podLogs); err != nil {
@@ -104,6 +110,7 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 					logMessages = append(logMessages, log)
 				}
 			}
+			log.Infof("Hello15 %s %v %v", podContainerName, lastLogTime, logMessages)
 			return logMessages, nil
 		}
 	}
