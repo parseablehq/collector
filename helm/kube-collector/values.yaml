@@ -24,7 +24,7 @@ kubec:
           language: go
           version: 1.2.6
 
-## Kubec deployment configurtion
+## Kubec deployment configuration
 image:
   repository: parseable/kube-collector
   pullPolicy: Always
