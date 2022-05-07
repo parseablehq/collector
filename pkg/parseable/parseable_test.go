@@ -13,44 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package parseable_test
 
-import (
-	"flag"
-	"kube-collector/cmd"
+import "testing"
 
-	log "github.com/sirupsen/logrus"
+func TestHttp(t *testing.T) {
 
-	"os"
-	"sync"
-)
-
-var configPath string
-
-func init() {
-	flag.StringVar(&configPath, "config", "", "config file for kube-collector")
-	flag.Parse()
-	if len(configPath) == 0 {
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
-}
-
-func main() {
-	config, err := cmd.ReadConfig(&configPath)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	var wg sync.WaitGroup
-
-	for _, stream := range config.LogStreams {
-		wg.Add(1)
-		go func(stream cmd.LogStream) {
-			defer wg.Done()
-			cmd.RunKubeCollector(&stream)
-		}(stream)
-	}
-	wg.Wait()
 }

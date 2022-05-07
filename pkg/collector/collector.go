@@ -1,13 +1,25 @@
+// Copyright (C) 2022 Parseable, Inc.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package collector
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"kube-collector/pkg/client"
-	"kube-collector/pkg/http"
+	"kube-collector/pkg/parseable"
 	"kube-collector/pkg/store"
-	"kube-collector/pkg/utils"
 
 	"strings"
 	"time"
@@ -39,51 +51,24 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 			Timestamps: true,
 			Container:  container.Name,
 		}
-
-		if store.IsStoreEmpty(podContainerName) == true {
-
-			query := fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, pod.GetName(), container.Name)
-			createQuery := map[string]string{
-				"query": query,
-			}
-
-			jQuery, err := json.Marshal(createQuery)
+		// use a combination of pod and container name to store the last
+		// time stamp. This ensure we can uniquely fetch a container's log
+		lastLogTime, ok := store.LastTimestamp(podContainerName)
+		if lastLogTime == (time.Time{}) || !ok {
+			mtq, err := parseable.LastLogTime(streamName, pod.Name, container.Name)
 			if err != nil {
 				return nil, err
 			}
-
-			var http http.HttpParseable = http.NewHttpRequest("GET", utils.GetParseableQueryURL(), nil, jQuery)
-			resp, err := http.DoHttpRequest()
-			if err != nil {
-				return nil, err
-			}
-
-			type maxTimeQuery []struct {
-				MAXSystemsTime string `json:"MAX(systems.time)"`
-			}
-
-			respData, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			var mtq maxTimeQuery
-			err = json.Unmarshal(respData, &mtq)
-			if err != nil {
-				return nil, err
-			}
-
 			if mtq != nil {
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
 					return nil, err
 				}
 				store.SetLastTimestamp(podContainerName, time)
+				lastLogTime = time
 			}
 		}
 
-		// use a combination of pod and container name to store the last
-		// time stamp. This ensure we can uniquely fetch a container's log
-		lastLogTime := store.LastTimestamp(podContainerName)
 		if lastLogTime != (time.Time{}) {
 			secsSinceLastLog := int64(time.Now().Sub(lastLogTime).Seconds())
 			podLogOpts.SinceSeconds = &secsSinceLastLog
@@ -93,7 +78,6 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		if len(podLogs) > 1 {
 			// last line of the log
 			if err := putTimeStamp(podContainerName, podLogs); err != nil {

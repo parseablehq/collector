@@ -1,3 +1,18 @@
+// Copyright (C) 2022 Parseable, Inc.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package store
 
 import (
@@ -6,17 +21,15 @@ import (
 
 var PoNameTime = make(map[string]time.Time)
 
-func LastTimestamp(poName string) time.Time {
-	return PoNameTime[poName]
+func LastTimestamp(poName string) (time.Time, bool) {
+	time, ok := PoNameTime[poName]
+	return time, ok
 }
 
 func SetLastTimestamp(poName string, time time.Time) {
 	PoNameTime[poName] = time
 }
 
-func IsStoreEmpty(poName string) bool {
-	if len(PoNameTime) == 0 {
-		return true
-	}
-	return false
+func IsEmpty() bool {
+	return len(PoNameTime) == 0
 }

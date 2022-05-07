@@ -1,11 +1,25 @@
+// Copyright (C) 2022 Parseable, Inc.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package cmd
 
 import (
 	"encoding/json"
 	"kube-collector/pkg/client"
 	"kube-collector/pkg/collector"
-	"kube-collector/pkg/http"
-	"kube-collector/pkg/utils"
+	"kube-collector/pkg/parseable"
 
 	"time"
 
@@ -15,34 +29,25 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func RunKubeCollector(streamName string, logSpec *LogSpec) {
-	// Create stream
-
-	var http http.HttpParseable = http.NewHttpRequest("PUT", utils.GetParseableStreamURL(streamName), nil, nil)
-
-	_, err := http.DoHttpRequest()
-	if err != nil {
-		// TODO: Make sure to ignore the error if the stream already exists
-		log.Error("Failed to create Log Stream due to error: ", err.Error())
-		return
-	} else {
-		log.Infof("Successfully created Log Stream [%s] on server [%s]", streamName, os.Getenv("PARSEABLE_URL"))
+func RunKubeCollector(stream *LogStream) {
+	if err := parseable.CreateStream(stream.Name); err != nil {
+		log.Error(err)
+		os.Exit(1)
 	}
-
-	interval, err := time.ParseDuration(logSpec.CollectInterval)
+	log.Infof("Successfully created Log Stream [%s] on server [%s]", stream.Name, os.Getenv("PARSEABLE_URL"))
+	interval, err := time.ParseDuration(stream.CollectInterval)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 	ticker := time.NewTicker(interval)
 	for range ticker.C {
-		kubeCollector(streamName, logSpec)
+		kubeCollector(stream)
 	}
 }
 
-func kubeCollector(streamName string, logSpec *LogSpec) {
-
-	collectFrom := logSpec.CollectFrom
+func kubeCollector(stream *LogStream) {
+	collectFrom := stream.CollectFrom
 	var podsList []*v1.PodList
 	for k, v := range collectFrom.PodSelector {
 		pods, err := client.KubeClient.ListPods(collectFrom.Namespace, k+"="+v)
@@ -54,7 +59,11 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 	}
 	for _, po := range podsList {
 		for _, p := range po.Items {
-			logs, err := collector.GetPodLogs(p, streamName)
+			logs, err := collector.GetPodLogs(p, stream.Name)
+			if err != nil {
+				log.Error(err)
+				return
+			}
 			if len(logs) > 0 {
 				if err != nil {
 					log.Error(err)
@@ -66,15 +75,10 @@ func kubeCollector(streamName string, logSpec *LogSpec) {
 				if err != nil {
 					return
 				}
-				var http http.HttpParseable = http.NewHttpRequest("POST", utils.GetParseableStreamURL(streamName), logSpec.AddTags, jLogs)
-
-				_, err = http.DoHttpRequest()
-				if err != nil {
+				if err := parseable.PostLogs(stream.Name, jLogs, stream.Tags); err != nil {
 					log.Error(err)
-					return
-				} else {
-					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 				}
+				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), os.Getenv("PARSEABLE_URL"))
 			}
 		}
 	}
