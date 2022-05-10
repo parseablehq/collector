@@ -18,6 +18,8 @@ package parseable
 import (
 	"bytes"
 	"net/http"
+	"runtime"
+	"strings"
 )
 
 const METADATA_LABEL = "X-P-META-"
@@ -45,6 +47,7 @@ func (h *httpRequest) Do() (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", getUserAgent())
 
 	if h.tags != nil {
 		for key, value := range h.tags {
@@ -57,4 +60,17 @@ func (h *httpRequest) Do() (*http.Response, error) {
 	}
 
 	return resp, nil
+}
+
+func getUserAgent() string {
+	userAgentParts := []string{}
+	uaAppend := func(p, q string) {
+		userAgentParts = append(userAgentParts, p, q)
+	}
+
+	uaAppend("Parseable Kube-Collector (", runtime.GOOS)
+	uaAppend("; ", runtime.GOARCH)
+	uaAppend("; ", runtime.Version())
+
+	return strings.Join(userAgentParts, ")")
 }
