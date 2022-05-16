@@ -8,4 +8,4 @@ data:
    config.yaml: |-
     ---
     logStreams:
-    {{- toYaml .Values.kubec.config.logStreams | nindent 4 }}
+    {{- toYaml .Values.kube_collector.logStreams | nindent 4 }}

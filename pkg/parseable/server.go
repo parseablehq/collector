@@ -25,9 +25,17 @@ type MaxTimeQuery []struct {
 	MAXSystemsTime string `json:"MAX(systems.time)"`
 }
 
-func CreateStream(streamName string) error {
-	req := newRequest("PUT", streamURL(streamName), nil, nil)
-	if resp, err := req.Do(); err != nil {
+func streamURL(url, streamName string) string {
+	return url + "/api/v1/stream/" + streamName
+}
+
+func queryURL(url string) string {
+	return url + "/api/v1/query"
+}
+
+func CreateStream(url, user, pwd, streamName string) error {
+	req := newRequest("PUT", streamURL(url, streamName), nil, nil)
+	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode == 400 {
 		// Server retruns 400 if stream already exists
@@ -39,9 +47,9 @@ func CreateStream(streamName string) error {
 	return nil
 }
 
-func PostLogs(streamName string, logs []byte, tags map[string]string) error {
-	req := newRequest("POST", streamURL(streamName), tags, logs)
-	if resp, err := req.Do(); err != nil {
+func PostLogs(url, user, pwd, streamName string, logs []byte, tags map[string]string) error {
+	req := newRequest("POST", streamURL(url, streamName), tags, logs)
+	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
 		return fmt.Errorf("unexpected status code: %d while posting log data to stream: %s", resp.StatusCode, streamName)
@@ -49,7 +57,7 @@ func PostLogs(streamName string, logs []byte, tags map[string]string) error {
 	return nil
 }
 
-func LastLogTime(streamName, podName, containerName string) (MaxTimeQuery, error) {
+func LastLogTime(url, user, pwd, streamName, podName, containerName string) (MaxTimeQuery, error) {
 	query := map[string]string{
 		"query": fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, podName, containerName),
 	}
@@ -59,8 +67,8 @@ func LastLogTime(streamName, podName, containerName string) (MaxTimeQuery, error
 		return nil, err
 	}
 
-	req := newRequest("GET", queryURL(), nil, queryJson)
-	resp, err := req.Do()
+	req := newRequest("GET", queryURL(url), nil, queryJson)
+	resp, err := req.Do(user, pwd)
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode == 500 {

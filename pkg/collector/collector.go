@@ -43,7 +43,7 @@ type logMetadata struct {
 	Namespace      string
 }
 
-func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
+func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, error) {
 
 	for _, container := range pod.Spec.Containers {
 		podContainerName := pod.GetName() + "/" + container.Name
@@ -55,7 +55,7 @@ func GetPodLogs(pod corev1.Pod, streamName string) ([]logMessage, error) {
 		// time stamp. This ensure we can uniquely fetch a container's log
 		lastLogTime, ok := store.LastTimestamp(podContainerName)
 		if lastLogTime == (time.Time{}) || !ok {
-			mtq, err := parseable.LastLogTime(streamName, pod.Name, container.Name)
+			mtq, err := parseable.LastLogTime(url, user, pwd, streamName, pod.Name, container.Name)
 			if err != nil {
 				return nil, err
 			}

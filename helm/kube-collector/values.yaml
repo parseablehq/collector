@@ -1,28 +1,32 @@
-## Kubec configuration
-kubec:
-  config:
-    parseable_url: http://api.parseable.io
-    logStreams:
-      ## First LogStream Configuration
-      - name: app1
-        collectInterval: 20s
-        collectFrom: 
-          namespace: java-app
-          podSelector: 
-            app: java-app
-        tags:
-          language: java
-          version: 1.2.5
-      ## Second LogStream configuration
-      - name: app2
-        collectInterval: 10s
-        collectFrom: 
-          namespace: go-app
-          podSelector: 
-            app: go-app
-        tags:
-          language: go
-          version: 1.2.6
+## Parseable LogStore config
+parseable_server:
+  url: "http://api.parseable.io"
+  username: "username"
+  password: "password"
+
+## Kube-Collector config
+kube_collector:
+  logStreams:
+    ## First LogStream Configuration
+    - name: app1
+      collectInterval: 20s
+      collectFrom: 
+        namespace: java-app
+        podSelector: 
+          app: java-app
+      tags:
+        language: java
+        version: 1.2.5
+    ## Second LogStream configuration
+    - name: app2
+      collectInterval: 10s
+      collectFrom: 
+        namespace: go-app
+        podSelector: 
+          app: go-app
+      tags:
+        language: go
+        version: 1.2.6
 
 ## Kubec deployment configuration
 image:
