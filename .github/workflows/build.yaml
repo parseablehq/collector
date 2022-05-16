@@ -7,8 +7,9 @@ jobs:
     name: Go fmt and vet
     runs-on: ubuntu-latest
     steps:
-      - name: fmt and vet
+      - name: checkout fmt and vet
         uses: actions/checkout@v2
+      - name: run fmt and vet
         run: make fmt && make vet
 
   docker:
