@@ -26,7 +26,7 @@ type MaxTimeQuery []struct {
 }
 
 func streamURL(url, streamName string) string {
-	return url + "/api/v1/stream/" + streamName
+	return url + "/api/v1/logstream/" + streamName
 }
 
 func queryURL(url string) string {
