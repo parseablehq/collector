@@ -41,10 +41,13 @@ func newRequest(method, url string, tags map[string]string, body []byte) *httpRe
 	return &httpRequest{method: method, url: url, tags: tags, body: body}
 }
 
-func (h *httpRequest) Do() (*http.Response, error) {
+func (h *httpRequest) Do(user, pwd string) (*http.Response, error) {
 	req, err := http.NewRequest(h.method, h.url, bytes.NewBuffer(h.body))
 	if err != nil {
 		return nil, err
+	}
+	if user != "" && pwd != "" {
+		req.SetBasicAuth(user, pwd)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", getUserAgent())

@@ -16,16 +16,25 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	DEFAULT_LOG_COLLECT_INTERVAL = "1m"
+	DEFAULT_LOG_COLLECT_INTERVAL  = "1m"
+	ENV_PARSEABLE_SERVER_URL      = "PARSEABLE_URL"
+	ENV_PARSEABLE_SERVER_USERNAME = "PARSEABLE_USERNAME"
+	ENV_PARSEABLE_SERVER_PASSWORD = "PARSEABLE_PASSWORD"
 )
 
 type CollectorConfig struct {
+	Server     string
+	Username   string
+	Password   string
 	LogStreams []LogStream `yaml:"logStreams"`
 }
 
@@ -54,7 +63,27 @@ func ReadConfig(path *string) (*CollectorConfig, error) {
 		return nil, err
 	}
 	logConfig.ensureDefaults()
+	if err := logConfig.SetCreds(); err != nil {
+		return nil, err
+	}
+
 	return &logConfig, nil
+}
+
+func (logConfig *CollectorConfig) SetCreds() error {
+	var ok bool
+	logConfig.Server, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_URL)
+	if !ok {
+		return fmt.Errorf("%s environment variable is not set", ENV_PARSEABLE_SERVER_URL)
+	}
+	logConfig.Username, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_USERNAME)
+	if !ok {
+		logConfig.Password, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_PASSWORD)
+		if !ok {
+			log.Info("Parseable credentials are not set as environment variables. Sending unauthenticated requests to Parseable server.")
+		}
+	}
+	return nil
 }
 
 func (logConfig *CollectorConfig) ensureDefaults() {

@@ -49,7 +49,7 @@ func main() {
 		wg.Add(1)
 		go func(stream cmd.LogStream) {
 			defer wg.Done()
-			cmd.RunKubeCollector(&stream)
+			cmd.RunKubeCollector(config.Server, config.Username, config.Password, &stream)
 		}(stream)
 	}
 	wg.Wait()

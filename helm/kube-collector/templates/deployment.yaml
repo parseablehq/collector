@@ -43,7 +43,11 @@ spec:
               value: {{ tpl $value $ | quote }}
             {{- end }}
             - name: PARSEABLE_URL
-              value: {{ .Values.kubec.config.parseable_url }}
+              value: {{ .Values.parseable_server.url }}
+            - name: PARSEABLE_USERNAME
+              value: {{ .Values.parseable_server.username }}
+            - name: PARSEABLE_PASSWORD
+              value: {{ .Values.parseable_server.password }}
           ports:
             - name: http
               containerPort: 80

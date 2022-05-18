@@ -14,14 +14,15 @@ Kubec is meant to be deployed only on Kubernetes. We recommend installing Kubec 
 ### Configuration
 
 ```yaml
-logStreams:
-  - name: backend
-    collectionInterval: 3s
-    collectFrom: 
-      namespace: streaming
-      podSelector: 
+parseable:
+  logStreams:
+    - name: backend
+      collectionInterval: 3s
+      collectFrom: 
+        namespace: streaming
+        podSelector: 
+          app: kafka
+      tags: 
         app: kafka
-    tags: 
-      app: kafka
-      namespace: streaming
+        namespace: streaming
 ```
