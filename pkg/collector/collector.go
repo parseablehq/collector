@@ -59,7 +59,7 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 			if err != nil {
 				return nil, err
 			}
-			if mtq != nil {
+			if len(mtq) > 1 {
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
 					return nil, err

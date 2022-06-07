@@ -86,13 +86,17 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
-	}
-	var mtq MaxTimeQuery
-	err = json.Unmarshal(respData, &mtq)
-	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
+	var mtq MaxTimeQuery
+
+	if len(respData) > 0 {
+		err = json.Unmarshal(respData, &mtq)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return mtq, nil
 }
