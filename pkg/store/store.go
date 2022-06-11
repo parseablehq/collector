@@ -30,6 +30,10 @@ func SetLastTimestamp(poName string, time time.Time) {
 	PoNameTime[poName] = time
 }
 
+func DeletePodName(podName string) {
+	delete(PoNameTime, podName)
+}
+
 func IsEmpty() bool {
 	return len(PoNameTime) == 0
 }
