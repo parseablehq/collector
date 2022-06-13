@@ -27,8 +27,8 @@ import (
 const (
 	DEFAULT_LOG_COLLECT_INTERVAL  = "1m"
 	ENV_PARSEABLE_SERVER_URL      = "PARSEABLE_URL"
-	ENV_PARSEABLE_SERVER_USERNAME = "PARSEABLE_USERNAME"
-	ENV_PARSEABLE_SERVER_PASSWORD = "PARSEABLE_PASSWORD"
+	ENV_PARSEABLE_SERVER_USERNAME = "P_USERNAME"
+	ENV_PARSEABLE_SERVER_PASSWORD = "P_PASSWORD"
 )
 
 type CollectorConfig struct {
@@ -77,7 +77,7 @@ func (logConfig *CollectorConfig) SetCreds() error {
 		return fmt.Errorf("%s environment variable is not set", ENV_PARSEABLE_SERVER_URL)
 	}
 	logConfig.Username, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_USERNAME)
-	if !ok {
+	if ok {
 		logConfig.Password, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_PASSWORD)
 		if !ok {
 			log.Info("Parseable credentials are not set as environment variables. Sending unauthenticated requests to Parseable server.")
