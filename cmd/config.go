@@ -40,7 +40,7 @@ type CollectorConfig struct {
 
 type LogStream struct {
 	Name            string            `yaml:"name"`
-	Tags            map[string]string `yaml:"tags"`
+	Labels          map[string]string `yaml:"labels"`
 	CollectInterval string            `yaml:"collectInterval"`
 	CollectFrom     CollectFrom       `yaml:"collectFrom"`
 }

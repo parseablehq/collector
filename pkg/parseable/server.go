@@ -47,8 +47,8 @@ func CreateStream(url, user, pwd, streamName string) error {
 	return nil
 }
 
-func PostLogs(url, user, pwd, streamName string, logs []byte, tags map[string]string) error {
-	req := newRequest("POST", streamURL(url, streamName), tags, logs)
+func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]string) error {
+	req := newRequest("POST", streamURL(url, streamName), labels, logs)
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
