@@ -41,6 +41,7 @@ type logMetadata struct {
 	ContainerImage string
 	PodName        string
 	Namespace      string
+	PodLabels      string
 }
 
 func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, error) {
@@ -97,6 +98,7 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 							ContainerName:  container.Name,
 							ContainerImage: container.Image,
 							PodName:        pod.GetName(),
+							PodLabels:      map2string(pod.GetLabels()),
 						},
 					}
 					logMessages = append(logMessages, log)
@@ -121,4 +123,12 @@ func putTimeStamp(podName string, podLogs []string) error {
 	store.SetLastTimestamp(podName, getTimeStamp)
 	fmt.Println(store.PoNameTime)
 	return err
+}
+
+func map2string(m map[string]string) string {
+	var labels []string
+	for key, value := range m {
+		labels = append(labels, key+"="+value)
+	}
+	return strings.Join(labels, ",")
 }

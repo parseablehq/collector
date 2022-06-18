@@ -1,6 +1,6 @@
-# Kubec
+# Collector
 
-Kubec (pronounced "cube - ek") is a log collection system for [Parseable server](https://github.com/parseablehq/parseable). Kubec is designed to _pull_ application logs from specific containers (using Kubernetes API). Kubec sends collected logs to Parseable server for storage, querying and further analysis. 
+Collector is a log collection system for [Parseable server](https://github.com/parseablehq/parseable). Collector is designed to _pull_ application logs from specific containers (using Kubernetes API). Collector sends collected logs to Parseable server for storage, querying and further analysis. 
 
 # Why
 
@@ -22,7 +22,7 @@ parseable:
         namespace: streaming
         podSelector: 
           app: kafka
-      tags: 
+      labels: 
         app: kafka
         namespace: streaming
 ```

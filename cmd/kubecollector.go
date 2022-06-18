@@ -75,7 +75,7 @@ func kubeCollector(url, user, pwd string, stream *LogStream) {
 				if err != nil {
 					return
 				}
-				if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Tags); err != nil {
+				if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Labels); err != nil {
 					log.Error(err)
 				}
 				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), url)
