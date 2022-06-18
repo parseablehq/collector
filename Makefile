@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-IMAGE = parseable/kube-collector
+IMAGE = parseable/collector
 TAG ?= $(shell git rev-parse --short HEAD)
 
 run: fmt vet 
@@ -28,15 +28,15 @@ docker-push:
 # helm deploy
 helm-update:
 	helm upgrade --install \
-	kube-collector \
-	helm/kube-collector \
-	-f helm/kube-collector/values.yaml \
+	collector \
+	helm/collector \
+	-f helm/collector/values.yaml \
 	--create-namespace \
-	--namespace kube-collector
+	--namespace collector
 
 # helm template
 helm-template:
 	helm template \
-	kube-collector \
-	helm/kube-collector \
-	-f helm/kube-collector/values.yaml --namespace kube-collector
+	collector \
+	helm/collector \
+	-f helm/collector/values.yaml --namespace collector
