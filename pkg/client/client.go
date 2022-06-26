@@ -21,6 +21,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -93,7 +94,8 @@ func getKubeClientset() *client {
 
 	if os.Getenv("RUN_LOCAL") == "true" {
 		// for running locally
-		conf, err = clientcmd.BuildConfigFromFlags("", "/home/adheip/.kube/config")
+		kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		conf, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
 			panic(err.Error())
 		}
