@@ -20,6 +20,8 @@ import (
 	"context"
 	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // k8s interface
@@ -85,12 +88,24 @@ func (c *client) GetPodLogs(pod corev1.Pod, podLogOptions corev1.PodLogOptions) 
 }
 
 func getKubeClientset() *client {
-	// creates the in-cluster config
-	conf, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
 
+	var conf *rest.Config
+	var err error
+
+	if os.Getenv("RUN_LOCAL") == "true" {
+		// for running locally
+		kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		conf, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			panic(err.Error())
+		}
+	} else {
+		// creates the in-cluster config
+		conf, err = rest.InClusterConfig()
+		if err != nil {
+			panic(err.Error())
+		}
+	}
 	cs, err := kubernetes.NewForConfig(conf)
 	if err != nil {
 		log.Printf("error in getting clientset from Kubeconfig: %v", err)
