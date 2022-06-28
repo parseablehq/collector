@@ -20,7 +20,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -77,11 +76,12 @@ func (logConfig *CollectorConfig) SetCreds() error {
 		return fmt.Errorf("%s environment variable is not set", ENV_PARSEABLE_SERVER_URL)
 	}
 	logConfig.Username, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_USERNAME)
-	if ok {
-		logConfig.Password, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_PASSWORD)
-		if !ok {
-			log.Info("Parseable credentials are not set as environment variables. Sending unauthenticated requests to Parseable server.")
-		}
+	if !ok {
+		return fmt.Errorf("Parseable credentials are not set as environment variables")
+	}
+	logConfig.Password, ok = os.LookupEnv(ENV_PARSEABLE_SERVER_PASSWORD)
+	if !ok {
+		return fmt.Errorf("Parseable credentials are not set as environment variables")
 	}
 	return nil
 }
