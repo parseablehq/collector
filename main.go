@@ -16,8 +16,8 @@
 package main
 
 import (
+	"collector/cmd"
 	"flag"
-	"kube-collector/cmd"
 
 	log "github.com/sirupsen/logrus"
 
@@ -28,7 +28,7 @@ import (
 var configPath string
 
 func init() {
-	flag.StringVar(&configPath, "config", "", "config file for kube-collector")
+	flag.StringVar(&configPath, "config", "", "config file for collector")
 	flag.Parse()
 	if len(configPath) == 0 {
 		flag.PrintDefaults()

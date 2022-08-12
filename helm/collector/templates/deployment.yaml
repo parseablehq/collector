@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kube-collector.fullname" . }}
+  name: {{ include "collector.fullname" . }}
   labels:
-    {{- include "kube-collector.labels" . | nindent 4 }}
+    {{- include "collector.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "kube-collector.selectorLabels" . | nindent 6 }}
+      {{- include "collector.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,13 +16,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "kube-collector.selectorLabels" . | nindent 8 }}
+        {{- include "collector.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "kube-collector.serviceAccountName" . }}
+      serviceAccountName: {{ include "collector.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -42,11 +42,11 @@ spec:
             - name: {{ $key }}
               value: {{ tpl $value $ | quote }}
             {{- end }}
-            - name: PARSEABLE_URL
+            - name: P_URL
               value: {{ .Values.parseable_server.url }}
-            - name: PARSEABLE_USERNAME
+            - name: P_USERNAME
               value: {{ .Values.parseable_server.username }}
-            - name: PARSEABLE_PASSWORD
+            - name: P_PASSWORD
               value: {{ .Values.parseable_server.password }}
           ports:
             - name: http
@@ -57,7 +57,7 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: {{ include "kube-collector.fullname" . }}
+          name: {{ include "collector.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -70,3 +70,31 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{ if eq .Values.demo.app.create true }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.demo.app.name }}
+  namespace: {{ .Values.demo.app.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- with .Values.demo.app.labels }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+  replicas: 2
+  template:
+    metadata:
+      labels:
+      {{- with .Values.demo.app.labels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+      - name: log-generator
+        image: mingrammer/flog
+        args: ["-f","json","-d","2s","-n","200","-l"]
+        ports:
+        - containerPort: 80 
+{{ end }}
