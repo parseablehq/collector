@@ -29,9 +29,9 @@ kube_collector:
 
 ## collector deployment configuration
 image:
-  repository: nitisht/collector
+  repository: parseable/collector
   pullPolicy: Always
-  tag: "into2"
+  tag: ""
 
 serviceAccount:
   create: true
