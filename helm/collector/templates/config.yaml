@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "kube-collector.fullname" . }}
+  name: {{ include "collector.fullname" . }}
   labels:
-    {{- include "kube-collector.labels" . | nindent 4 }}
+    {{- include "collector.labels" . | nindent 4 }}
 data:
    config.yaml: |-
     ---

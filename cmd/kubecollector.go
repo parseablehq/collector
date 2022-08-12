@@ -16,10 +16,10 @@
 package cmd
 
 import (
+	"collector/pkg/client"
+	"collector/pkg/collector"
+	"collector/pkg/parseable"
 	"encoding/json"
-	"kube-collector/pkg/client"
-	"kube-collector/pkg/collector"
-	"kube-collector/pkg/parseable"
 
 	"time"
 

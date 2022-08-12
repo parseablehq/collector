@@ -15,7 +15,7 @@ Fixes #XXXX.
 <hr>
 
 This PR has:
-- [ ] been tested on a real K8S cluster to ensure creation of a brand new kube-collector works.
+- [ ] been tested on a real K8S cluster to ensure creation of a brand new collector works.
 - [ ] been tested for backward compatibility on a real K*S cluster by applying the changes introduced here on an existing kube collector with parseable server . If there are any backward incompatible changes then they have been noted in the PR description.
 - [ ] added comments explaining the "why" and the intent of the code wherever would not be obvious for an unfamiliar reader.
 - [ ] added documentation for new or modified features or behaviors.

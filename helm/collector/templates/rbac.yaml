@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "kube-collector.serviceAccountName" . }}
+  name: {{ include "collector.serviceAccountName" . }}
 rules:
   - apiGroups:
       - ""
@@ -16,13 +16,13 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ include "kube-collector.serviceAccountName" . }}
+  name: {{ include "collector.serviceAccountName" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "kube-collector.serviceAccountName" . }}
+  name: {{ include "collector.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ include "kube-collector.serviceAccountName" . }}
+  name: {{ include "collector.serviceAccountName" . }}
   apiGroup: rbac.authorization.k8s.io
 {{- end }}

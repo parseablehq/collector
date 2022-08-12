@@ -1,24 +1,23 @@
+## This configures a demo app that 
+## generates random logs 
+demo:
+  app:
+    create: true
+    name: demo-app
+    namespace: go-app
+    labels:
+      app: go-app
+
 ## Parseable LogStore config
 parseable_server:
-  url: "http://api.parseable.io"
-  username: "username"
-  password: "password"
+  url: "http://parseable.default.svc.cluster.local"
+  username: "parseable"
+  password: "parseable"
 
-## Kube-Collector config
+## collector config
 kube_collector:
   logStreams:
-    ## First LogStream Configuration
-    - name: app1
-      collectInterval: 20s
-      collectFrom: 
-        namespace: java-app
-        podSelector: 
-          app: java-app
-      labels:
-        language: java
-        version: 1.2.5
-    ## Second LogStream configuration
-    - name: app2
+    - name: demoapp
       collectInterval: 10s
       collectFrom: 
         namespace: go-app
@@ -30,9 +29,9 @@ kube_collector:
 
 ## collector deployment configuration
 image:
-  repository: parseable/collector
+  repository: nitisht/collector
   pullPolicy: Always
-  tag: ""
+  tag: "into2"
 
 serviceAccount:
   create: true

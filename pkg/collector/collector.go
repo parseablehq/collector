@@ -16,10 +16,10 @@
 package collector
 
 import (
+	"collector/pkg/client"
+	"collector/pkg/parseable"
+	"collector/pkg/store"
 	"fmt"
-	"kube-collector/pkg/client"
-	"kube-collector/pkg/parseable"
-	"kube-collector/pkg/store"
 
 	"strings"
 	"time"
