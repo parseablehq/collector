@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.parseable.io" target="_blank"><img src="https://raw.githubusercontent.com/parseablehq/docs/main/static/img/collector-logo.svg" alt="Parseable" width="300" height="100" /> <h1 align="center">Collector</h1></a>
+  <a href="https://www.parseable.io" target="_blank"><img src="https://raw.githubusercontent.com/parseablehq/docs/main/static/img/collector-logo.svg" alt="Parseable" width="300" height="100" /></a>
 </p>
 
 <p align="center">
