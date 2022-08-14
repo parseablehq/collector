@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 )
 
 type MaxTimeQuery []struct {
@@ -59,7 +60,9 @@ func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]
 
 func LastLogTime(url, user, pwd, streamName, podName, containerName string) (MaxTimeQuery, error) {
 	query := map[string]string{
-		"query": fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, podName, containerName),
+		"query":     fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, podName, containerName),
+		"startTime": time.Now().UTC().Add(time.Duration(-10) * time.Minute).Format(time.RFC3339),
+		"endTime":   time.Now().UTC().Format(time.RFC3339),
 	}
 
 	queryJson, err := json.Marshal(query)
@@ -67,7 +70,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 		return nil, err
 	}
 
-	req := newRequest("GET", queryURL(url), nil, queryJson)
+	req := newRequest("POST", queryURL(url), nil, queryJson)
 	resp, err := req.Do(user, pwd)
 	if err != nil {
 		return nil, err
