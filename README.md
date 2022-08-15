@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.parseable.io" target="_blank"><img src="https://raw.githubusercontent.com/parseablehq/docs/main/static/img/collector-logo.svg" alt="Parseable" width="300" height="100" /></a>
+  <a href="https://www.parseable.io" target="_blank"><img src="https://raw.githubusercontent.com/parseablehq/.github/main/images/collector-logo.svg" alt="Parseable" width="300" height="100" /></a>
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 Parseable Collector is an automatic log collection system for [Parseable](https://github.com/parseablehq/parseable). Collector is designed to _pull_ application logs from specific containers (using Kubernetes API). Collector sends collected logs to Parseable server for storage, querying and further analysis. 
 
 <p align="center">
-  <img src="https://github.com/parseablehq/docs/raw/main/static/img/collector-overview.svg" alt="Parseable Overview" width="800" height="650" />
+  <img src="https://raw.githubusercontent.com/parseablehq/.github/main/images/collector-overview.svg" alt="Parseable Overview" width="800" height="650" />
 </p>
 
 <h1></h1>
