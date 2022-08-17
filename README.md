@@ -14,7 +14,8 @@
 Parseable Collector is an automatic log collection system for [Parseable](https://github.com/parseablehq/parseable). Collector is designed to _pull_ application logs from specific containers (using Kubernetes API). Collector sends collected logs to Parseable server for storage, querying and further analysis. 
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/parseablehq/.github/main/images/collector-overview.svg" alt="Parseable Overview" width="800" height="650" />
+  <img src="https://raw.githubusercontent.com/parseablehq/.github/main/images/collector-overview.svg#gh-light-mode-only" alt="Parseable Overview" width="800" height="650" />
+  <img src="https://raw.githubusercontent.com/parseablehq/.github/main/images/collector-overview-dark.svg#gh-dark-mode-only" alt="Parseable Overview" width="800" height="650" />
 </p>
 
 <h1></h1>
