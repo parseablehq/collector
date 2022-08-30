@@ -19,7 +19,6 @@ import (
 	"collector/pkg/client"
 	"collector/pkg/parseable"
 	"collector/pkg/store"
-	"fmt"
 
 	"strings"
 	"time"
@@ -35,13 +34,13 @@ type logMessage struct {
 }
 
 type logMetadata struct {
-	Host           string
-	Source         string
-	ContainerName  string
-	ContainerImage string
-	PodName        string
-	Namespace      string
-	PodLabels      string
+	Host           string `json:"host"`
+	Source         string `json:"source"`
+	ContainerName  string `json:"containername"`
+	ContainerImage string `json:"containerimage"`
+	PodName        string `json:"podname"`
+	Namespace      string `json:"namespace"`
+	PodLabels      string `json:"podlabels"`
 }
 
 func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, error) {
@@ -121,7 +120,6 @@ func putTimeStamp(podName string, podLogs []string) error {
 	}
 	// put poName to TimeStamp
 	store.SetLastTimestamp(podName, getTimeStamp)
-	fmt.Println(store.PoNameTime)
 	return err
 }
 

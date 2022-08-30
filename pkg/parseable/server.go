@@ -59,8 +59,9 @@ func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]
 }
 
 func LastLogTime(url, user, pwd, streamName, podName, containerName string) (MaxTimeQuery, error) {
+
 	query := map[string]string{
-		"query":     fmt.Sprintf("select max(time) from %s where meta_PodName = '%s' and meta_ContainerName = '%s'", streamName, podName, containerName),
+		"query":     fmt.Sprintf("select max(time) from %s where meta_podname = '%s' and meta_containername = '%s'", streamName, podName, containerName),
 		"startTime": time.Now().UTC().Add(time.Duration(-10) * time.Minute).Format(time.RFC3339),
 		"endTime":   time.Now().UTC().Format(time.RFC3339),
 	}
