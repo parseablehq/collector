@@ -4,13 +4,13 @@ demo:
   app:
     create: true
     name: demo-app
-    namespace: go-app
+    namespace: default
     labels:
       app: go-app
 
 ## Parseable LogStore config
 parseable_server:
-  url: "http://parseable.default.svc.cluster.local"
+  url: "http://parseable.parseable.svc.cluster.local"
   username: "parseable"
   password: "parseable"
 
@@ -20,7 +20,7 @@ kube_collector:
     - name: demoapp
       collectInterval: 10s
       collectFrom: 
-        namespace: go-app
+        namespace: default
         podSelector: 
           app: go-app
       labels:

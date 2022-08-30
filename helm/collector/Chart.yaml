@@ -3,3 +3,4 @@ name: collector
 description: Helm chart for Parseable Collector
 type: application
 version: 0.0.1
+AppVersion: 4769fbf
