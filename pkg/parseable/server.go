@@ -35,7 +35,7 @@ func queryURL(url string) string {
 }
 
 func CreateStream(url, user, pwd, streamName string) error {
-	req := newRequest("PUT", streamURL(url, streamName), nil, nil)
+	req := newRequest("PUT", streamURL(url, streamName), nil, nil, nil)
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode == 400 {
@@ -48,8 +48,8 @@ func CreateStream(url, user, pwd, streamName string) error {
 	return nil
 }
 
-func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]string) error {
-	req := newRequest("POST", streamURL(url, streamName), labels, logs)
+func PostLogs(url, user, pwd, streamName string, logs []byte, tags, metaLabels map[string]string) error {
+	req := newRequest("POST", streamURL(url, streamName), tags, metaLabels, logs)
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
@@ -71,7 +71,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 		return nil, err
 	}
 
-	req := newRequest("POST", queryURL(url), nil, queryJson)
+	req := newRequest("POST", queryURL(url), nil, nil, queryJson)
 	resp, err := req.Do(user, pwd)
 	if err != nil {
 		return nil, err

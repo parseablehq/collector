@@ -71,14 +71,20 @@ func kubeCollector(url, user, pwd string, stream *LogStream) {
 				} else {
 					log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
 				}
-				jLogs, err := json.Marshal(logs)
-				if err != nil {
-					return
+				for _, l := range logs {
+					ll := map[string]string{
+						"log": l.Log,
+					}
+					jLogs, err := json.Marshal(ll)
+					if err != nil {
+						return
+					}
+					if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Labels, l.LogMeta); err != nil {
+						log.Error(err)
+					} else {
+						log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), url)
+					}
 				}
-				if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Labels); err != nil {
-					log.Error(err)
-				}
-				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), url)
 			}
 		}
 	}

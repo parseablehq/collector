@@ -28,19 +28,9 @@ import (
 
 // logMessage represents a single log message entry
 type logMessage struct {
-	Timestamp string      `json:"time"`
-	Log       string      `json:"log"`
-	LogMeta   logMetadata `json:"meta"`
-}
-
-type logMetadata struct {
-	Host           string `json:"host"`
-	Source         string `json:"source"`
-	ContainerName  string `json:"containername"`
-	ContainerImage string `json:"containerimage"`
-	PodName        string `json:"podname"`
-	Namespace      string `json:"namespace"`
-	PodLabels      string `json:"podlabels"`
+	Timestamp string `json:"time"`
+	Log       string `json:"log"`
+	LogMeta   map[string]string
 }
 
 func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, error) {
@@ -90,14 +80,14 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 					log := logMessage{
 						Timestamp: newLogMessage[0],
 						Log:       strings.Join(newLogMessage[1:], " "),
-						LogMeta: logMetadata{
-							Namespace:      pod.GetNamespace(),
-							Host:           pod.Status.HostIP,
-							Source:         pod.Status.PodIP,
-							ContainerName:  container.Name,
-							ContainerImage: container.Image,
-							PodName:        pod.GetName(),
-							PodLabels:      map2string(pod.GetLabels()),
+						LogMeta: map[string]string{
+							"Namespace":      pod.GetNamespace(),
+							"Host":           pod.Status.HostIP,
+							"Source":         pod.Status.PodIP,
+							"ContainerName":  container.Name,
+							"ContainerImage": container.Image,
+							"PodName":        pod.GetName(),
+							"PodLabels":      map2string(pod.GetLabels()),
 						},
 					}
 					logMessages = append(logMessages, log)
