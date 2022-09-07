@@ -73,8 +73,10 @@ func kubeCollector(url, user, pwd string, stream *LogStream) {
 				}
 				for _, l := range logs {
 					ll := map[string]string{
-						"log": l.Log,
+						"time": l.Timestamp,
+						"log":  l.Log,
 					}
+
 					jLogs, err := json.Marshal(ll)
 					if err != nil {
 						return

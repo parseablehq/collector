@@ -19,6 +19,7 @@ import (
 	"collector/pkg/client"
 	"collector/pkg/parseable"
 	"collector/pkg/store"
+	"fmt"
 
 	"strings"
 	"time"
@@ -49,9 +50,11 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 			if err != nil {
 				return nil, err
 			}
-			if len(mtq) > 1 {
+			fmt.Println(mtq)
+			if len(mtq) > 3 {
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
+
 					return nil, err
 				}
 				store.SetLastTimestamp(podContainerName, time)
