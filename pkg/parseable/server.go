@@ -53,6 +53,7 @@ func PostLogs(url, user, pwd, streamName string, logs []byte, tags, metaLabels m
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
+		fmt.Println(resp.Body)
 		return fmt.Errorf("unexpected status code: %d while posting log data to stream: %s", resp.StatusCode, streamName)
 	}
 	return nil

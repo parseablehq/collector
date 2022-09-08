@@ -19,7 +19,6 @@ import (
 	"collector/pkg/client"
 	"collector/pkg/parseable"
 	"collector/pkg/store"
-	"fmt"
 
 	"strings"
 	"time"
@@ -31,10 +30,9 @@ import (
 type logMessage struct {
 	Timestamp string `json:"time"`
 	Log       string `json:"log"`
-	LogMeta   map[string]string
 }
 
-func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, error) {
+func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage, map[string]string, error) {
 
 	for _, container := range pod.Spec.Containers {
 		podContainerName := pod.GetName() + "/" + container.Name
@@ -48,14 +46,13 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 		if lastLogTime == (time.Time{}) || !ok {
 			mtq, err := parseable.LastLogTime(url, user, pwd, streamName, pod.Name, container.Name)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-			fmt.Println(mtq)
 			if len(mtq) > 3 {
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
 
-					return nil, err
+					return nil, nil, err
 				}
 				store.SetLastTimestamp(podContainerName, time)
 				lastLogTime = time
@@ -69,37 +66,38 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 
 		podLogs, err := client.KubeClient.GetPodLogs(pod, podLogOpts)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if len(podLogs) > 1 {
 			// last line of the log
 			if err := putTimeStamp(podContainerName, podLogs); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			var logMessages []logMessage
+			var LogMeta map[string]string
 			for _, lm := range podLogs {
 				newLogMessage := strings.Fields(lm)
 				if len(newLogMessage) > 1 {
 					log := logMessage{
 						Timestamp: newLogMessage[0],
 						Log:       strings.Join(newLogMessage[1:], " "),
-						LogMeta: map[string]string{
-							"Namespace":      pod.GetNamespace(),
-							"Host":           pod.Status.HostIP,
-							"Source":         pod.Status.PodIP,
-							"ContainerName":  container.Name,
-							"ContainerImage": container.Image,
-							"PodName":        pod.GetName(),
-							"PodLabels":      map2string(pod.GetLabels()),
-						},
 					}
 					logMessages = append(logMessages, log)
+					LogMeta = map[string]string{
+						"Namespace":      pod.GetNamespace(),
+						"Host":           pod.Status.HostIP,
+						"Source":         pod.Status.PodIP,
+						"ContainerName":  container.Name,
+						"ContainerImage": container.Image,
+						"PodName":        pod.GetName(),
+						"PodLabels":      map2string(pod.GetLabels()),
+					}
 				}
 			}
-			return logMessages, nil
+			return logMessages, LogMeta, nil
 		}
 	}
-	return []logMessage{}, nil
+	return []logMessage{}, nil, nil
 }
 
 func putTimeStamp(podName string, podLogs []string) error {

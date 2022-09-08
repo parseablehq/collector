@@ -1,5 +1,5 @@
 logStreams:
-  - name: newtraefik5
+  - name: a11
     collectInterval: 10s
     collectFrom: 
       namespace: go-apps
