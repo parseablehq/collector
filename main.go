@@ -30,7 +30,7 @@ var configPath string
 func init() {
 	flag.StringVar(&configPath, "config", "", "config file for collector")
 	flag.Parse()
-	if len(configPath) == 0 {
+	if configPath == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
