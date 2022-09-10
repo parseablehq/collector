@@ -18,7 +18,7 @@ package parseable
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"time"
 )
 
@@ -77,7 +77,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 		return nil, err
 	} else if resp.StatusCode == 500 {
 		// This is the case where the log stream is empty
-		respData, err := ioutil.ReadAll(resp.Body)
+		respData, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 		return nil, fmt.Errorf("unexpected status code: %d while querying log data timestamp in stream: %s", resp.StatusCode, streamName)
 	}
 
-	respData, err := ioutil.ReadAll(resp.Body)
+	respData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

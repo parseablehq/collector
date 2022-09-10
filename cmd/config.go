@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -50,7 +49,7 @@ type CollectFrom struct {
 }
 
 func ReadConfig(path *string) (*CollectorConfig, error) {
-	configfile, err := ioutil.ReadFile(*path)
+	configfile, err := os.ReadFile(*path)
 	if err != nil {
 		return nil, err
 	}
