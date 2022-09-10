@@ -17,6 +17,6 @@ package parseable_test
 
 import "testing"
 
-func TestHttp(t *testing.T) {
+func TestHttp(_ *testing.T) {
 
 }
