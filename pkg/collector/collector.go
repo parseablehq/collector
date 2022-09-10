@@ -70,7 +70,7 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 		}
 
 		if lastLogTime != (time.Time{}) {
-			secsSinceLastLog := int64(time.Now().Sub(lastLogTime).Seconds())
+			secsSinceLastLog := int64(time.Since(lastLogTime).Seconds())
 			podLogOpts.SinceSeconds = &secsSinceLastLog
 		}
 
