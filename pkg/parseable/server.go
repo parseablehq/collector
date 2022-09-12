@@ -35,7 +35,7 @@ func queryURL(url string) string {
 }
 
 func CreateStream(url, user, pwd, streamName string) error {
-	req := newRequest("PUT", streamURL(url, streamName), nil, nil)
+	req := newRequest("PUT", streamURL(url, streamName), nil, nil, nil)
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode == 400 {
@@ -48,8 +48,8 @@ func CreateStream(url, user, pwd, streamName string) error {
 	return nil
 }
 
-func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]string) error {
-	req := newRequest("POST", streamURL(url, streamName), labels, logs)
+func PostLogs(url, user, pwd, streamName string, logs []byte, tags, metaLabels map[string]string) error {
+	req := newRequest("POST", streamURL(url, streamName), tags, metaLabels, logs)
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode != 200 {
@@ -61,7 +61,7 @@ func PostLogs(url, user, pwd, streamName string, logs []byte, labels map[string]
 func LastLogTime(url, user, pwd, streamName, podName, containerName string) (MaxTimeQuery, error) {
 
 	query := map[string]string{
-		"query":     fmt.Sprintf("select max(time) from %s where meta_podname = '%s' and meta_containername = '%s'", streamName, podName, containerName),
+		"query":     fmt.Sprintf("select max(time) from %s where p_metadata like '%s=%s' and p_metadata like '%s=%s'", streamName, "%podname", podName+"%", "%containerimage", containerName+"%"),
 		"startTime": time.Now().UTC().Add(time.Duration(-10) * time.Minute).Format(time.RFC3339),
 		"endTime":   time.Now().UTC().Format(time.RFC3339),
 	}
@@ -71,7 +71,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 		return nil, err
 	}
 
-	req := newRequest("POST", queryURL(url), nil, queryJson)
+	req := newRequest("POST", queryURL(url), nil, nil, queryJson)
 	resp, err := req.Do(user, pwd)
 	if err != nil {
 		return nil, err
@@ -96,6 +96,7 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 
 	var mtq MaxTimeQuery
 
+	fmt.Println(string(respData))
 	if len(respData) > 0 {
 		err = json.Unmarshal(respData, &mtq)
 		if err != nil {

@@ -59,7 +59,7 @@ func kubeCollector(url, user, pwd string, stream *LogStream) {
 	}
 	for _, po := range podsList {
 		for _, p := range po.Items {
-			logs, err := collector.GetPodLogs(p, url, user, pwd, stream.Name)
+			logs, meta, err := collector.GetPodLogs(p, url, user, pwd, stream.Name)
 			if err != nil {
 				log.Error(err)
 				return
@@ -71,14 +71,17 @@ func kubeCollector(url, user, pwd string, stream *LogStream) {
 				} else {
 					log.Infof("Successfully collected log from [%s] in [%s] namespace", p.GetName(), p.Namespace)
 				}
+
 				jLogs, err := json.Marshal(logs)
 				if err != nil {
 					return
 				}
-				if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Labels); err != nil {
+				if err := parseable.PostLogs(url, user, pwd, stream.Name, jLogs, stream.Labels, meta); err != nil {
 					log.Error(err)
+				} else {
+					log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), url)
 				}
-				log.Infof("Successfully sent log from [%s] in [%s] namespace to server [%s]", p.GetName(), p.GetNamespace(), url)
+
 			}
 		}
 	}

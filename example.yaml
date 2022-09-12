@@ -1,0 +1,10 @@
+logStreams:
+  - name: a11
+    collectInterval: 10s
+    collectFrom: 
+      namespace: go-apps
+      podSelector: 
+       app: go-app
+    labels:
+      language: golang
+      app: ingress

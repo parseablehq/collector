@@ -17,12 +17,17 @@ package parseable
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"runtime"
 	"strings"
 )
 
-const METADATA_LABEL = "X-P-META-"
+const (
+	METADATA_LABEL = "X-P-META-"
+	TAG_LABEL      = "X-P-TAGS-"
+)
 
 type HttpParseable interface {
 	Do() (*http.Response, error)
@@ -31,14 +36,15 @@ type HttpParseable interface {
 // httpRequest holds all the fields needed for a HTTP request
 // to parseable server.
 type httpRequest struct {
-	method string
-	url    string
-	labels map[string]string
-	body   []byte
+	method     string
+	url        string
+	tags       map[string]string
+	metaLabels map[string]string
+	body       []byte
 }
 
-func newRequest(method, url string, labels map[string]string, body []byte) *httpRequest {
-	return &httpRequest{method: method, url: url, labels: labels, body: body}
+func newRequest(method, url string, tags, metaLabels map[string]string, body []byte) *httpRequest {
+	return &httpRequest{method: method, url: url, tags: tags, metaLabels: metaLabels, body: body}
 }
 
 func (h *httpRequest) Do(user, pwd string) (*http.Response, error) {
@@ -52,12 +58,19 @@ func (h *httpRequest) Do(user, pwd string) (*http.Response, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", getUserAgent())
 
-	if h.labels != nil {
-		for key, value := range h.labels {
-			req.Header.Add(METADATA_LABEL+key, value)
+	if h.tags != nil {
+		for key, value := range h.tags {
+			req.Header.Add(TAG_LABEL+key, value)
 		}
 	}
 
+	if h.metaLabels != nil {
+		for key, value := range h.metaLabels {
+			req.Header.Add(METADATA_LABEL+key, value)
+		}
+	}
+	r, _ := httputil.DumpRequest(req, true)
+	fmt.Printf("%s", string(r))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err

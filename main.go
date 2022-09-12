@@ -46,17 +46,17 @@ func main() {
 	var wg sync.WaitGroup
 
 	for _, stream := range config.LogStreams {
-		wg.Add(2)
+		wg.Add(1)
 		go func(stream cmd.LogStream) {
 			defer wg.Done()
 			cmd.RunKubeCollector(config.Server, config.Username, config.Password, &stream)
 		}(stream)
-		for k, v := range stream.CollectFrom.PodSelector {
-			go func(namespace, selector string) {
-				defer wg.Done()
-				cmd.ExecCleanStore(namespace, selector)
-			}(stream.CollectFrom.Namespace, k+"="+v)
-		}
+		// for k, v := range stream.CollectFrom.PodSelector {
+		// 	go func(namespace, selector string) {
+		// 		defer wg.Done()
+		// 		cmd.ExecCleanStore(namespace, selector)
+		// 	}(stream.CollectFrom.Namespace, k+"="+v)
+		// }
 
 	}
 	wg.Wait()
