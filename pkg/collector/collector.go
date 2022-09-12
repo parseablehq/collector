@@ -44,10 +44,10 @@ func GetPodLogs(pod corev1.Pod, url, user, pwd, streamName string) ([]logMessage
 		// time stamp. This ensure we can uniquely fetch a container's log
 		lastLogTime, ok := store.LastTimestamp(podContainerName)
 		if lastLogTime == (time.Time{}) || !ok {
-			mtq, err := parseable.LastLogTime(url, user, pwd, streamName, pod.Name, container.Name)
-			if err != nil {
-				return nil, nil, err
-			}
+			mtq, _ := parseable.LastLogTime(url, user, pwd, streamName, pod.Name, container.Name)
+			// if err != nil {
+			// 	//return nil, nil, err
+			// }
 			if len(mtq) > 3 {
 				time, err := time.Parse(time.RFC3339, mtq[0].MAXSystemsTime)
 				if err != nil {
