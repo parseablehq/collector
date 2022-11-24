@@ -20,6 +20,7 @@ import (
 	"collector/pkg/collector"
 	"collector/pkg/parseable"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -29,14 +30,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func RunKubeCollector(url, user, pwd string, stream *LogStream) {
+func RunKubeCollector(url, user, pwd string, stream *LogStream) error {
 	if strings.Contains(stream.Name, "-") {
-		log.Errorf("Stream Name [%s] not valid, cannot have '-' in string", stream.Name)
-		os.Exit(1)
+		return fmt.Errorf("Stream Name [%s] not valid, cannot have '-' in string", stream.Name)
 	}
 	if err := parseable.CreateStream(url, user, pwd, stream.Name); err != nil {
-		log.Errorf("Error in stream creation, err [%s]", err)
-		os.Exit(1)
+		return fmt.Errorf("Error in stream creation, err [%s]", err)
 	}
 	log.Infof("Successfully created Log Stream [%s] on server [%s]", stream.Name, url)
 	interval, err := time.ParseDuration(stream.CollectInterval)
@@ -48,6 +47,7 @@ func RunKubeCollector(url, user, pwd string, stream *LogStream) {
 	for range ticker.C {
 		kubeCollector(url, user, pwd, stream)
 	}
+	return nil
 }
 
 func kubeCollector(url, user, pwd string, stream *LogStream) {

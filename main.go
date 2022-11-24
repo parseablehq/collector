@@ -49,7 +49,10 @@ func main() {
 		wg.Add(1)
 		go func(stream cmd.LogStream) {
 			defer wg.Done()
-			cmd.RunKubeCollector(config.Server, config.Username, config.Password, &stream)
+			if err := cmd.RunKubeCollector(config.Server, config.Username, config.Password, &stream); err != nil {
+				log.Error(err)
+				os.Exit(1)
+			}
 		}(stream)
 		// for k, v := range stream.CollectFrom.PodSelector {
 		// 	go func(namespace, selector string) {
