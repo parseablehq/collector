@@ -20,7 +20,7 @@ import (
 	"collector/pkg/collector"
 	"collector/pkg/parseable"
 	"encoding/json"
-
+	"strings"
 	"time"
 
 	"os"
@@ -30,8 +30,12 @@ import (
 )
 
 func RunKubeCollector(url, user, pwd string, stream *LogStream) {
+	if strings.Contains(stream.Name, "-") {
+		log.Errorf("Stream Name [%s] not valid, cannot have '-' in string", stream.Name)
+		os.Exit(1)
+	}
 	if err := parseable.CreateStream(url, user, pwd, stream.Name); err != nil {
-		log.Error(err)
+		log.Errorf("Error in stream creation, err [%s]", err)
 		os.Exit(1)
 	}
 	log.Infof("Successfully created Log Stream [%s] on server [%s]", stream.Name, url)
