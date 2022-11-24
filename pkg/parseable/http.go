@@ -17,9 +17,7 @@ package parseable
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"runtime"
 	"strings"
 )
@@ -69,8 +67,7 @@ func (h *httpRequest) Do(user, pwd string) (*http.Response, error) {
 			req.Header.Add(METADATA_LABEL+key, value)
 		}
 	}
-	r, _ := httputil.DumpRequest(req, true)
-	fmt.Printf("%s", string(r))
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err

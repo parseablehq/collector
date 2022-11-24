@@ -90,13 +90,11 @@ func LastLogTime(url, user, pwd, streamName, podName, containerName string) (Max
 
 	respData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
 	var mtq MaxTimeQuery
 
-	fmt.Println(string(respData))
 	if len(respData) > 0 {
 		err = json.Unmarshal(respData, &mtq)
 		if err != nil {
