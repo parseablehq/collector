@@ -39,8 +39,6 @@ func CreateStream(url, user, pwd, streamName string) error {
 	if resp, err := req.Do(user, pwd); err != nil {
 		return err
 	} else if resp.StatusCode == 400 {
-		// Server retruns 400 if stream already exists
-		// we ignore that error and return nil
 		return nil
 	} else if resp.StatusCode != 200 {
 		return fmt.Errorf("unexpected status code: %d while creating stream: %s", resp.StatusCode, streamName)
